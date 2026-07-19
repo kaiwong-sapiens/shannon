@@ -576,12 +576,21 @@ function drawChart(p, H, ph) {
 
 /* ---------------- wiring ---------------- */
 
+// A browser that decides the touch was a scroll/long-press fires pointercancel:
+// stop the hold WITHOUT counting a flip (only a real release flips).
+function cancelHold() {
+  spin.holding = false;
+}
+
 els.coin.addEventListener('pointerdown', (ev) => {
   ev.preventDefault();
+  try { els.coin.setPointerCapture(ev.pointerId); } catch (e) { /* not supported */ }
   pressCoin();
 });
+els.coin.addEventListener('pointerup', releaseCoin);
 window.addEventListener('pointerup', releaseCoin);
-window.addEventListener('pointercancel', releaseCoin);
+window.addEventListener('pointercancel', cancelHold);
+els.coin.addEventListener('contextmenu', (ev) => ev.preventDefault());
 els.coin.addEventListener('keydown', (ev) => {
   if ((ev.key === ' ' || ev.key === 'Enter') && !ev.repeat) {
     ev.preventDefault();
