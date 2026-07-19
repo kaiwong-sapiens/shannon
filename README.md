@@ -24,9 +24,15 @@ or just open `index.html` straight from disk. Everything works offline.
 ![Guess the Entropy — reveal screen](docs/coin-entropy.png)
 
 A coin is minted with a secret bias. Flip it (×1, ×10, ×100), watch the tally drift,
-then guess how many **bits of surprise** one flip of *this* coin carries. Lock in
-your guess and the reveal shows where the coin truly sits on the binary entropy
-curve, what your flips suggested, and how far off you were.
+then guess how many **bits of surprise** one flip of *this* coin carries. Check your
+guess and the reveal shows where the coin truly sits on the binary entropy curve,
+what your flips suggested, and how far off you were.
+
+Entropy is treated as a tangible property of the coin itself: heads and tails are
+distinct faces (gold portrait / violet star), the coin **fidgets in proportion to
+the entropy your flips imply** (restlessness = unpredictability, computed from the
+observed tally so it never leaks the answer), and at the reveal it turns over to
+show its true worth stamped into the metal — bits per flip, like a denomination.
 
 What it's designed to teach:
 

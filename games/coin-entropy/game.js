@@ -71,6 +71,33 @@ const els = {
 
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+/* ---------------- coin faces ---------------- */
+
+const COIN_FACES = {
+  '?': '<span class="coin-glyph">?</span>',
+  H: '<svg class="coin-icon" viewBox="0 0 24 24" aria-hidden="true">'
+    + '<circle cx="12" cy="8.6" r="4.4"/><path d="M4.2 20.5a7.8 6.6 0 0 1 15.6 0z"/></svg>'
+    + '<span class="coin-cap">Heads</span>',
+  T: '<svg class="coin-icon" viewBox="0 0 24 24" aria-hidden="true">'
+    + '<polygon points="12,2 14.47,8.6 21.51,8.91 15.99,13.3 17.88,20.09 12,16.2 6.12,20.09 8.01,13.3 2.49,8.91 9.53,8.6"/></svg>'
+    + '<span class="coin-cap">Tails</span>',
+};
+
+// 'V' is the assay face: the coin's true worth, stamped at reveal.
+function setCoinFace(face, stampValue) {
+  els.coin.innerHTML = face === 'V'
+    ? `<span class="coin-value">${stampValue}</span><span class="coin-cap">bits per flip</span>`
+    : COIN_FACES[face];
+  els.coin.classList.toggle('face-t', face === 'T');
+}
+
+// The coin fidgets in proportion to the entropy its observed flips imply.
+function setRestlessness() {
+  const n = state.heads + state.tails;
+  const wob = !state.locked && n ? entropyBits(state.heads / n) : 0;
+  document.getElementById('coin-wob').style.setProperty('--wob', wob.toFixed(3));
+}
+
 /* ---------------- formatting ---------------- */
 
 const fmtPct = (p) => (Math.round(p * 1000) / 10).toFixed(1).replace(/\.0$/, '') + '%';
@@ -97,13 +124,13 @@ function flip(n) {
   clearTimeout(spinTimer);
   els.coin.classList.remove('spin', 'bulk');
   if (reducedMotion) {
-    els.coin.textContent = face;
+    setCoinFace(face);
   } else if (n === 1) {
     void els.coin.offsetWidth;              // restart the animation
     els.coin.classList.add('spin');
-    spinTimer = setTimeout(() => { els.coin.textContent = face; }, 250);
+    spinTimer = setTimeout(() => setCoinFace(face), 250);
   } else {
-    els.coin.textContent = face;
+    setCoinFace(face);
     void els.coin.offsetWidth;
     els.coin.classList.add('bulk');
   }
@@ -119,6 +146,7 @@ function renderTally() {
   els.segT.style.flexGrow = state.tails;
   els.pctH.textContent = n ? fmtPct(state.heads / n) + ' heads' : '';
   els.pctT.textContent = n ? fmtPct(state.tails / n) + ' tails' : '';
+  setRestlessness();
 }
 
 /* ---------------- guessing & scoring ---------------- */
@@ -197,6 +225,18 @@ function lock() {
   drawChart(p, H, ph, guess);
   els.legendObs.hidden = ph === null;
 
+  // the coin turns over and shows its true worth, stamped into the metal
+  clearTimeout(spinTimer);
+  els.coin.classList.remove('spin', 'bulk');
+  if (reducedMotion) {
+    setCoinFace('V', fmtBits(H, 3));
+  } else {
+    void els.coin.offsetWidth;
+    els.coin.classList.add('spin');
+    spinTimer = setTimeout(() => setCoinFace('V', fmtBits(H, 3)), 250);
+  }
+  setRestlessness();
+
   setPlayEnabled(false);
   els.revealPanel.hidden = false;
   els.revealPanel.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'nearest' });
@@ -209,7 +249,7 @@ function nextRound() {
   state.tails = 0;
   state.locked = false;
   els.strip.innerHTML = '';
-  els.coin.textContent = '?';
+  setCoinFace('?');
   els.guess.value = '0.5';
   syncGuess();
   renderTally();
@@ -402,5 +442,10 @@ if (qs.has('demo') || qs.has('demoplay')) {
     els.guess.value = '0.79';
     syncGuess();
     lock();
+    // settle the coin instantly so screenshots are deterministic
+    clearTimeout(spinTimer);
+    els.coin.classList.remove('spin');
+    setCoinFace('V', fmtBits(state.coin.H, 3));
   }
+  if (COIN_FACES[qs.get('face')]) setCoinFace(qs.get('face'));
 }

@@ -17,6 +17,7 @@
   --heads: #eda100;
   --heads-ink: #3c2a00;
   --tails: #4a3aa7;
+  --tails-ink: #efedfb;
   --curve: #2a78d6;
   --true: #eb6834;
 }
@@ -35,6 +36,7 @@
     --heads: #c98500;
     --heads-ink: #1d1200;
     --tails: #9085e9;
+    --tails-ink: #1b1442;
     --curve: #3987e5;
     --true: #d95926;
   }
@@ -52,6 +54,7 @@
   --heads: #c98500;
   --heads-ink: #1d1200;
   --tails: #9085e9;
+  --tails-ink: #1b1442;
   --curve: #3987e5;
   --true: #d95926;
 }
@@ -110,17 +113,35 @@ a { color: inherit; }
 
 .coin-zone { display: flex; flex-direction: column; align-items: center; gap: 16px; margin-bottom: 22px; }
 
+/* Restlessness: the coin fidgets in proportion to the entropy its flips imply
+   (--wob is H(observed p̂), 0..1 — derived only from what the player can see). */
+.coin-wob { display: inline-block; --wob: 0; animation: fidget 2.4s ease-in-out infinite; }
+@keyframes fidget {
+  0%, 50%, 100% { transform: rotate(0) translateY(0); }
+  25% { transform: rotate(calc(var(--wob) * 4deg)) translateY(calc(var(--wob) * -2px)); }
+  75% { transform: rotate(calc(var(--wob) * -4deg)) translateY(calc(var(--wob) * -1px)); }
+}
+
 .coin {
   width: 132px;
   height: 132px;
   border-radius: 50%;
   border: none;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
   background: var(--heads);
   color: var(--heads-ink);
   font: 800 54px/1 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   cursor: pointer;
   box-shadow: inset 0 -8px 0 rgba(0, 0, 0, 0.18), inset 0 4px 0 rgba(255, 255, 255, 0.35);
 }
+.coin.face-t { background: var(--tails); color: var(--tails-ink); }
+.coin-icon { width: 52px; height: 52px; fill: currentColor; }
+.coin-cap { font-size: 12.5px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; }
+.coin-value { font-size: 31px; font-weight: 800; letter-spacing: -0.01em; }
 .coin:active:not(:disabled) { transform: scale(0.96); }
 .coin.spin { animation: spin 0.5s ease; }
 .coin.bulk { animation: pulse 0.3s ease; }
@@ -294,7 +315,7 @@ footer a { color: var(--ink-2); }
 /* ---------- motion ---------- */
 
 @media (prefers-reduced-motion: reduce) {
-  .coin.spin, .coin.bulk { animation: none; }
+  .coin.spin, .coin.bulk, .coin-wob { animation: none; }
   .seg { transition: none; }
   .btn:active:not(:disabled), .coin:active:not(:disabled) { transform: none; }
 }
