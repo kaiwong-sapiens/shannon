@@ -77,10 +77,10 @@ const COIN_FACES = {
   '?': '<span class="coin-glyph">?</span>',
   H: '<svg class="coin-icon" viewBox="0 0 24 24" aria-hidden="true">'
     + '<circle cx="12" cy="8.6" r="4.4"/><path d="M4.2 20.5a7.8 6.6 0 0 1 15.6 0z"/></svg>'
-    + '<span class="coin-cap">Heads</span>',
+    + '<span class="coin-cap">Shannon</span>',
   T: '<svg class="coin-icon" viewBox="0 0 24 24" aria-hidden="true">'
     + '<polygon points="12,2 14.47,8.6 21.51,8.91 15.99,13.3 17.88,20.09 12,16.2 6.12,20.09 8.01,13.3 2.49,8.91 9.53,8.6"/></svg>'
-    + '<span class="coin-cap">Tails</span>',
+    + '<span class="coin-cap">1948</span>',
 };
 
 // 'V' is the assay face: the coin's true worth, stamped at reveal.

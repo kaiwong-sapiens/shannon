@@ -29,8 +29,9 @@ guess and the reveal shows where the coin truly sits on the binary entropy curve
 what your flips suggested, and how far off you were.
 
 Entropy is treated as a tangible property of the coin itself: heads and tails are
-distinct faces (gold portrait / violet star), the coin **fidgets in proportion to
-the entropy your flips imply** (restlessness = unpredictability, computed from the
+distinct faces engraved like a real coin (obverse: gold, Shannon's portrait;
+reverse: violet, a star over 1948), the coin **fidgets in proportion to the
+entropy your flips imply** (restlessness = unpredictability, computed from the
 observed tally so it never leaks the answer), and at the reveal it turns over to
 show its true worth stamped into the metal — bits per flip, like a denomination.
 
