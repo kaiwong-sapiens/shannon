@@ -214,6 +214,7 @@ let stampTimer = null;
 const spin = {
   angle: 0, vel: 0, last: 0, raf: null,
   holding: false, base: '?', pending: null, showing: null,
+  decel: 900, fricK: 5,   // randomized per toss so no two landings feel identical
 };
 
 function abortSpin() {
@@ -245,11 +246,11 @@ function spinStep(ts) {
     spin.vel += (SPIN_MAX - spin.vel) * Math.min(1, dt * 6);
     spin.angle += spin.vel * dt;
   } else if (spin.pending === null) {
-    spin.vel = Math.max(0, spin.vel - (500 + spin.vel * 2.2) * dt);
+    spin.vel = Math.max(0, spin.vel - (spin.decel + spin.vel * spin.fricK) * dt);
     spin.angle += spin.vel * dt;
     if (spin.vel === 0) { endSpin(null); return; }
-  } else if (spin.vel > 300) {
-    spin.vel = Math.max(0, spin.vel - (500 + spin.vel * 2.2) * dt);
+  } else if (spin.vel > 450) {
+    spin.vel = Math.max(0, spin.vel - (spin.decel + spin.vel * spin.fricK) * dt);
     spin.angle += spin.vel * dt;
   } else {
     // slow enough: glide to the next front-facing turn and land the outcome
@@ -257,7 +258,7 @@ function spinStep(ts) {
     const a = ((spin.angle % 360) + 360) % 360;
     const rem = (360 - a) % 360;
     if (rem < 3) { endSpin(spin.pending); return; }
-    spin.angle += Math.max(140 * dt, rem * Math.min(1, dt * 9));
+    spin.angle += Math.max(220 * dt, rem * Math.min(1, dt * 12));
   }
 
   const a = ((spin.angle % 360) + 360) % 360;
@@ -299,6 +300,9 @@ function releaseCoin() {
     setCoinFace(face);
     sfxLand(isHeads);
   } else {
+    // visual-only randomness (Math.random, not the game rng): vary the coast
+    spin.decel = 700 + Math.random() * 500;
+    spin.fricK = 4 + Math.random() * 2.5;
     spin.pending = face;
   }
 }
