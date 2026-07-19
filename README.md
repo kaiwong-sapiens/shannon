@@ -19,9 +19,9 @@ or just open `index.html` straight from disk. Everything works offline.
 
 ## Explorables
 
-### 1 · Guess the Entropy — [`games/coin-entropy/`](games/coin-entropy/)
+### 1 · Guess the Coin's Entropy — [`games/coin-entropy/`](games/coin-entropy/)
 
-![Guess the Entropy — reveal screen](docs/coin-entropy.png)
+![Guess the Coin's Entropy — reveal screen](docs/coin-entropy.png)
 
 A coin is minted with a secret bias. Flip it (×1, ×10, ×100), watch the tally drift,
 then guess how many **bits of surprise** one flip of *this* coin carries. Check your

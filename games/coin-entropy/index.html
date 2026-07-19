@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Guess the Entropy · shannon</title>
-  <meta name="description" content="Flip a mystery coin and guess how many bits of surprise each flip carries — an interactive introduction to Shannon entropy.">
+  <title>Guess the Coin's Entropy · shannon</title>
+  <meta name="description" content="Flip a mystery coin, feel its bias, and guess its entropy — the bits of surprise it packs into every flip.">
   <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20100%20100%22%3E%3Ctext%20y=%22.9em%22%20font-size=%2290%22%3E%F0%9F%AA%99%3C/text%3E%3C/svg%3E">
   <link rel="stylesheet" href="style.css">
 </head>
@@ -21,8 +21,8 @@
   </div>
 
   <header class="masthead">
-    <h1>Guess the Entropy</h1>
-    <p class="tagline">This coin has a secret bias. How many <strong>bits of surprise</strong> is one flip worth?</p>
+    <h1>Guess the Coin's Entropy</h1>
+    <p class="tagline">Every coin carries its own amount of surprise. Flip this one, feel it out, then guess <strong>its entropy</strong>.</p>
   </header>
 
   <main>
@@ -51,9 +51,9 @@
       <div class="guess-zone">
         <div class="guess-value">
           <output id="guess-out" for="guess">0.50</output>
-          <span class="unit">bits of surprise</span>
+          <span class="unit">its entropy, in bits</span>
         </div>
-        <input type="range" class="guess-slider" id="guess" min="0" max="1" step="0.01" value="0.5" aria-label="Your entropy guess in bits">
+        <input type="range" class="guess-slider" id="guess" min="0" max="1" step="0.01" value="0.5" aria-label="Your guess at the coin's entropy, in bits">
         <div class="slider-ends"><span>0 · certain</span><span>1 · 50/50</span></div>
       </div>
 
@@ -66,7 +66,7 @@
 
       <div class="chips">
         <span class="chip-stat">The coin: <b id="chip-coin"></b></span>
-        <span class="chip-stat">True entropy: <b id="chip-true"></b></span>
+        <span class="chip-stat">Its entropy: <b id="chip-true"></b></span>
         <span class="chip-stat"><b id="chip-flips"></b></span>
       </div>
 
@@ -95,9 +95,9 @@
     <details class="learn">
       <summary class="meta-chip">New to entropy?</summary>
       <ul>
-        <li>Entropy = average surprise, measured in bits.</li>
-        <li>A fair coin is worth exactly 1 bit per flip; a certain outcome, 0.</li>
-        <li>Entropy is the limit of compression — the reason ZIP files work. Shannon proved it in 1948.</li>
+        <li>Every coin owns an entropy: the average surprise one flip delivers, in bits.</li>
+        <li>A fair coin's entropy is exactly 1 bit; a two-headed coin's is 0.</li>
+        <li>A coin's entropy is also the limit of compressing its flips — the reason ZIP files work. Shannon proved it in 1948.</li>
       </ul>
     </details>
   </main>
