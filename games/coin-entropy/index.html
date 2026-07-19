@@ -13,12 +13,6 @@
 
   <div class="topbar">
     <nav class="crumb"><a href="../../index.html">← shannon</a></nav>
-    <div class="meta" aria-label="Your progress">
-      <span class="meta-chip">Round <b id="stat-round">1</b></span>
-      <span class="meta-chip"><b id="stat-score">0</b> pts</span>
-      <span class="meta-chip" id="stat-avg-chip" hidden>avg <b id="stat-avg"></b> off</span>
-      <button class="meta-chip meta-btn" id="sound" aria-pressed="true" aria-label="Sound on">🔊</button>
-    </div>
   </div>
 
   <header class="masthead">
@@ -50,27 +44,27 @@
       <h2 id="verdict"></h2>
       <p class="verdict-sub" id="verdict-sub"></p>
 
-      <div class="chips">
-        <span class="chip-stat">The coin: <b id="chip-coin"></b></span>
-        <span class="chip-stat">Its entropy: <b id="chip-true"></b></span>
-        <span class="chip-stat"><b id="chip-flips"></b></span>
-      </div>
-
-      <figure class="chart-figure">
-        <figcaption>Every coin lives on this curve — hover to explore.</figcaption>
-        <svg id="chart" viewBox="0 0 640 360" role="img"
-             aria-label="Binary entropy curve: bits of surprise against chance of heads, with the true coin, your observed flips, and your guess marked."></svg>
-        <div class="chart-legend">
-          <span><span class="ckey ckey-true"></span>the coin</span>
-          <span id="legend-obs"><span class="ckey ckey-obs"></span>your flips</span>
-          <span><span class="ckey ckey-guess"></span>your pick</span>
-        </div>
-      </figure>
-
-      <p class="insight" id="insight"></p>
-
       <details class="more" id="more-math">
-        <summary>Show the math</summary>
+        <summary>Show the details</summary>
+
+        <div class="chips">
+          <span class="chip-stat">The coin: <b id="chip-coin"></b></span>
+          <span class="chip-stat">Its entropy: <b id="chip-true"></b></span>
+          <span class="chip-stat"><b id="chip-flips"></b></span>
+        </div>
+
+        <figure class="chart-figure">
+          <figcaption>Every coin lives on this curve — hover to explore.</figcaption>
+          <svg id="chart" viewBox="0 0 640 360" role="img"
+               aria-label="Binary entropy curve: bits of surprise against chance of heads, with the true coin, your observed flips, and your guess marked."></svg>
+          <div class="chart-legend">
+            <span><span class="ckey ckey-true"></span>the coin</span>
+            <span id="legend-obs"><span class="ckey ckey-obs"></span>your flips</span>
+            <span><span class="ckey ckey-guess"></span>your pick</span>
+          </div>
+        </figure>
+
+        <p class="insight" id="insight"></p>
         <p class="mathline" id="mathline"></p>
         <p class="noise" id="noise"></p>
       </details>
@@ -89,8 +83,7 @@
   </main>
 
   <footer>
-    <p><a href="https://people.math.harvard.edu/~ctm/home/text/others/shannon/entropy/entropy.pdf">Shannon (1948)</a>
-      · <a href="#" id="reset">Reset progress</a></p>
+    <p><a href="https://people.math.harvard.edu/~ctm/home/text/others/shannon/entropy/entropy.pdf">Shannon (1948)</a></p>
   </footer>
 
 </div>

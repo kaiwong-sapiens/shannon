@@ -27,9 +27,10 @@ A coin is minted with a secret bias. Press it to spin, release to let it coast a
 land — every flip is a real toss. Watch the tally drift, then pick **its entropy**
 — the surprise per flip — from three candidate values: one is exact, the other two
 are distractors (one close, one far), so you still have to genuinely discriminate.
-Scoring is by how far your pick lands from the truth, and the reveal shows where
-the coin truly sits on the binary entropy curve, what your flips suggested, and
-how far off you were.
+The verdict is a simple correct-or-not (a correct pick scores 100; a near-miss
+still earns partial credit by distance). Everything else — where the coin sits on
+the binary entropy curve, what your flips suggested, the worked formula, and the
+sampling-noise floor — waits behind a "Show the details" fold for the curious.
 
 Entropy is treated as a tangible property of the coin itself: heads and tails are
 distinct faces engraved like a real coin (obverse: gold, Shannon's portrait;

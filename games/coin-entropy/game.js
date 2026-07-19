@@ -30,15 +30,12 @@ function seedRand(seed) {
 
 /* ---------------- state ---------------- */
 
-const STORE_KEY = 'shannon-coin-entropy-v1';
-
 const state = {
   coin: null,            // { p, H } — p is P(heads)
-  options: [],           // four candidate entropies; one is the coin's
+  options: [],           // three candidate entropies; one is the coin's
   heads: 0,
   tails: 0,
   locked: false,
-  life: { rounds: 0, sumErr: 0, score: 0 },
 };
 
 // Sample the target *entropy* uniformly, then invert to a bias. Sampling the bias
@@ -93,18 +90,12 @@ const els = {
   chipCoin: $('chip-coin'), chipTrue: $('chip-true'), chipFlips: $('chip-flips'),
   chart: $('chart'), legendObs: $('legend-obs'),
   insight: $('insight'), mathline: $('mathline'), noise: $('noise'), moreMath: $('more-math'),
-  next: $('next'), statRound: $('stat-round'), statScore: $('stat-score'),
-  statAvg: $('stat-avg'), statAvgChip: $('stat-avg-chip'),
-  reset: $('reset'), sound: $('sound'),
+  next: $('next'),
 };
 
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 /* ---------------- sound (synthesized — no assets) ---------------- */
-
-const SOUND_KEY = 'shannon-coin-sound';
-let soundOn = true;
-try { soundOn = localStorage.getItem(SOUND_KEY) !== 'off'; } catch (e) { /* ignore */ }
 
 let actx = null;
 let noiseBuf = null;
@@ -122,14 +113,15 @@ function audio() {
   return actx;
 }
 
-function tone(freq, dur, { type = 'sine', gain = 0.15, at = 0 } = {}) {
+function tone(freq, dur, { type = 'sine', gain = 0.15, at = 0, glide } = {}) {
   const ctx = audio();
   if (!ctx) return;
   const t = ctx.currentTime + at;
   const o = ctx.createOscillator();
   const g = ctx.createGain();
   o.type = type;
-  o.frequency.value = freq;
+  o.frequency.setValueAtTime(freq, t);
+  if (glide) o.frequency.exponentialRampToValueAtTime(glide, t + dur);
   g.gain.setValueAtTime(gain, t);
   g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
   o.connect(g).connect(ctx.destination);
@@ -150,29 +142,30 @@ function thud(at = 0) {
   s.start(t);
 }
 
-function sfxFlick() { if (soundOn) tone(2400, 0.05, { type: 'triangle', gain: 0.06 }); }
+function sfxFlick() { tone(2400, 0.05, { type: 'triangle', gain: 0.06 }); }
 
 // heads and tails land on different notes — you can hear the bias
 function sfxLand(isHeads) {
-  if (!soundOn) return;
   const f = isHeads ? 1318.5 : 880;   // E6 vs A5
   tone(f, 0.35, { type: 'triangle', gain: 0.14 });
   tone(f * 1.5, 0.22, { type: 'sine', gain: 0.07 });
 }
 
 function sfxStamp() {
-  if (!soundOn) return;
   thud();
   tone(150, 0.15, { gain: 0.2 });
 }
 
-function sfxVerdict(err) {
-  if (!soundOn) return;
-  const seq = err <= 0.05 ? [523.25, 659.25, 783.99, 1046.5]   // rising major
-    : err <= 0.10 ? [523.25, 783.99]
-    : err <= 0.20 ? [440]
-    : [392, 311.13];                                            // falling minor
-  seq.forEach((f, i) => tone(f, 0.28, { type: 'triangle', gain: 0.1, at: 0.35 + i * 0.09 }));
+function sfxVerdict(correct) {
+  if (correct) {
+    // rising major sparkle
+    [523.25, 659.25, 783.99, 1046.5].forEach((f, i) =>
+      tone(f, 0.28, { type: 'triangle', gain: 0.1, at: 0.35 + i * 0.09 }));
+  } else {
+    // a gentle womp-womp: falling tritone, second note bending down
+    tone(311.13, 0.16, { type: 'triangle', gain: 0.12, at: 0.35 });
+    tone(233.08, 0.4, { type: 'triangle', gain: 0.14, at: 0.53, glide: 196 });
+  }
 }
 
 /* ---------------- coin faces ---------------- */
@@ -352,23 +345,19 @@ function renderAnswers() {
   }
 }
 
+function trueOption() {
+  return state.options.reduce((a, b) =>
+    (Math.abs(b - state.coin.H) < Math.abs(a - state.coin.H) ? b : a));
+}
+
 function answer(guess, btn) {
   if (state.locked) return;
   lock(guess);
   btn.classList.add('chosen');
-  const trueV = state.options.reduce((a, b) =>
-    (Math.abs(b - state.coin.H) < Math.abs(a - state.coin.H) ? b : a));
+  const trueV = trueOption();
   for (const el of els.answers.children) {
     if (Number(el.textContent) === trueV) el.classList.add('is-true');
   }
-}
-
-function verdictFor(err) {
-  if (err <= 0.02) return 'Spot on!';
-  if (err <= 0.05) return 'Sharp!';
-  if (err <= 0.10) return 'Nice!';
-  if (err <= 0.20) return 'Warm';
-  return 'Cold';
 }
 
 function insightFor(p, H) {
@@ -390,15 +379,11 @@ function lock(guess) {
 
   const { p, H } = state.coin;
   const err = Math.abs(guess - H);
-  const pts = Math.max(0, Math.round(100 - 500 * err));
+  const correct = guess === trueOption();
 
-  state.life.rounds += 1;
-  state.life.sumErr += err;
-  state.life.score += pts;
-  saveLife();
-
-  els.verdict.textContent = verdictFor(err);
-  els.verdictSub.textContent = `${fmtBits(err)} bits off · +${pts} points`;
+  els.verdict.textContent = correct ? 'Correct!' : 'Not quite';
+  els.verdictSub.textContent = correct ? '' : `${fmtBits(err)} bits off`;
+  els.verdictSub.hidden = correct;
 
   const n = state.heads + state.tails;
   els.chipCoin.textContent = fmtPct(p) + ' heads';
@@ -432,7 +417,7 @@ function lock(guess) {
   els.legendObs.hidden = ph === null;
 
   // the coin turns over and shows its true worth, stamped into the metal
-  if (soundOn) audio();                    // prime the context inside the click gesture
+  audio();                                 // prime the context inside the click gesture
   if (reducedMotion) {
     setCoinFace('V', fmtBits(H, 3));
     sfxStamp();
@@ -441,13 +426,12 @@ function lock(guess) {
     els.coin.classList.add('spin');
     stampTimer = setTimeout(() => { setCoinFace('V', fmtBits(H, 3)); sfxStamp(); }, 250);
   }
-  sfxVerdict(err);
+  sfxVerdict(correct);
   setRestlessness();
 
   setPlayEnabled(false);
   els.revealPanel.hidden = false;
   els.revealPanel.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'nearest' });
-  renderScorebar();
 }
 
 function nextRound() {
@@ -467,36 +451,12 @@ function nextRound() {
   els.revealPanel.hidden = true;
   els.moreMath.open = false;
   setPlayEnabled(true);
-  renderScorebar();
   document.getElementById('play-panel').scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'nearest' });
 }
 
 function setPlayEnabled(on) {
   els.coin.disabled = !on;
   for (const b of els.answers.children) b.disabled = !on;
-}
-
-function renderScorebar() {
-  els.statRound.textContent = state.life.rounds + (state.locked ? 0 : 1);
-  els.statScore.textContent = state.life.score;
-  els.statAvgChip.hidden = state.life.rounds === 0;
-  if (state.life.rounds) els.statAvg.textContent = fmtBits(state.life.sumErr / state.life.rounds);
-}
-
-/* ---------------- persistence ---------------- */
-
-function saveLife() {
-  try { localStorage.setItem(STORE_KEY, JSON.stringify(state.life)); } catch (e) { /* private mode etc. */ }
-}
-function loadLife() {
-  try {
-    const raw = localStorage.getItem(STORE_KEY);
-    if (!raw) return;
-    const v = JSON.parse(raw);
-    if (typeof v.rounds === 'number' && typeof v.sumErr === 'number' && typeof v.score === 'number') {
-      state.life = v;
-    }
-  } catch (e) { /* ignore corrupt storage */ }
 }
 
 /* ---------------- chart ---------------- */
@@ -638,37 +598,13 @@ els.coin.addEventListener('keyup', (ev) => {
 });
 
 els.next.addEventListener('click', nextRound);
-els.reset.addEventListener('click', (ev) => {
-  ev.preventDefault();
-  try { localStorage.removeItem(STORE_KEY); } catch (e) { /* ignore */ }
-  location.reload();
-});
-
-function updateSoundBtn() {
-  els.sound.textContent = soundOn ? '🔊' : '🔇';
-  els.sound.setAttribute('aria-pressed', String(soundOn));
-  els.sound.setAttribute('aria-label', soundOn ? 'Sound on' : 'Sound off');
-}
-els.sound.addEventListener('click', () => {
-  soundOn = !soundOn;
-  try { localStorage.setItem(SOUND_KEY, soundOn ? 'on' : 'off'); } catch (e) { /* ignore */ }
-  updateSoundBtn();
-  if (soundOn) sfxLand(true);              // audible confirmation
-});
 
 /* ---------------- init ---------------- */
 
-loadLife();
 state.coin = newCoin();
 state.options = makeOptions(state.coin.H);
 renderAnswers();
-syncInit();
-
-function syncInit() {
-  renderTally();
-  renderScorebar();
-  updateSoundBtn();
-}
+renderTally();
 
 // Test/screenshot hooks: ?demo → deterministic flips + answered round (reveal state),
 // ?demoplay → deterministic flips only. ?dark forces dark. ?face=H|T forces a face.
@@ -684,10 +620,11 @@ if (qs.has('demo') || qs.has('demoplay')) {
     const pick = state.options.reduce((a, b) => (Math.abs(b - 0.79) < Math.abs(a - 0.79) ? b : a));
     const btn = [...els.answers.children].find((el) => Number(el.textContent) === pick);
     answer(pick, btn);
-    // settle the coin instantly so screenshots are deterministic
+    // settle the coin instantly and unfold details so screenshots show everything
     clearTimeout(stampTimer);
     els.coin.classList.remove('spin');
     setCoinFace('V', fmtBits(state.coin.H, 3));
+    els.moreMath.open = true;
   }
   if (COIN_FACES[qs.get('face')]) setCoinFace(qs.get('face'));
 }

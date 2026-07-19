@@ -81,15 +81,11 @@ a { color: inherit; }
 .crumb a { font-size: 14px; font-weight: 600; color: var(--muted); text-decoration: none; }
 .crumb a:hover { color: var(--ink); }
 
-.meta { display: flex; gap: 8px; }
 .meta-chip {
   font-size: 13px; font-weight: 700; color: var(--ink-2);
   border: 1.5px solid var(--grid); border-radius: 999px;
   padding: 4px 12px; background: var(--surface);
 }
-.meta-chip b { color: var(--ink); }
-.meta-btn { cursor: pointer; font-family: inherit; line-height: inherit; }
-.meta-btn:hover { border-color: var(--axis); }
 
 .masthead { text-align: center; margin-bottom: 24px; }
 .masthead h1 {
@@ -279,10 +275,10 @@ button:disabled { opacity: 0.4; cursor: default; }
 details.more { border-top: 1.5px solid var(--grid); padding-top: 14px; }
 details.more summary {
   cursor: pointer; font-size: 14px; font-weight: 700; color: var(--ink-2);
-  list-style-position: inside;
+  list-style-position: inside; text-align: center;
 }
 details.more summary:hover { color: var(--ink); }
-details.more[open] summary { margin-bottom: 8px; }
+details.more[open] summary { margin-bottom: 14px; }
 .mathline { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 13px; color: var(--ink-2); margin: 0 0 8px; overflow-x: auto; }
 .noise { font-size: 13.5px; color: var(--ink-2); margin: 0; }
 
