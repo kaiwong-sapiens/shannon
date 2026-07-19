@@ -264,6 +264,7 @@ button:disabled { opacity: 0.4; cursor: default; }
 #chart .truedot { fill: var(--true); stroke: var(--surface); stroke-width: 2; }
 #chart .obsdot { fill: var(--muted); stroke: var(--surface); stroke-width: 2; }
 #chart .truelabel { fill: var(--ink); font-size: 12px; font-weight: 600; }
+#chart .formula { fill: var(--ink-2); font-size: 13px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
 #chart .hoverdot { fill: var(--surface); stroke: var(--curve); stroke-width: 2; }
 #chart .hovertext { fill: var(--ink-2); font-size: 12px; }
 #chart .hitarea { fill: transparent; cursor: crosshair; }

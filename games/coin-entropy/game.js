@@ -393,7 +393,7 @@ function lock() {
 
   const n = state.heads + state.tails;
   els.chipCoin.textContent = fmtPct(p) + ' heads';
-  els.chipTrue.textContent = fmtBits(H, 3) + ' bits';
+  els.chipTrue.textContent = fmtBits(H) + ' bits';
   els.chipFlips.textContent = n === 1 ? '1 flip used' : `${n} flips used`;
 
   els.insight.textContent = insightFor(p, H);
@@ -401,7 +401,7 @@ function lock() {
   if (p > 0 && p < 1) {
     const q = 1 - p;
     els.mathline.textContent =
-      `H = −${p} log₂ ${p} − ${+q.toFixed(3)} log₂ ${+q.toFixed(3)} = ${fmtBits(H, 3)} bits`;
+      `H = −${p} log₂ ${p} − ${+q.toFixed(3)} log₂ ${+q.toFixed(3)} = ${fmtBits(H)} bits`;
   } else {
     els.mathline.textContent = 'H = 0 exactly — certainty needs no bits.';
   }
@@ -423,7 +423,7 @@ function lock() {
   // the coin turns over and shows its true worth, stamped into the metal
   void els.coin.offsetWidth;
   els.coin.classList.add('spin');
-  stampTimer = setTimeout(() => { setCoinFace('V', fmtBits(H, 3)); sfxStamp(); }, 250);
+  stampTimer = setTimeout(() => { setCoinFace('V', fmtBits(H)); sfxStamp(); }, 250);
   sfxCorrect();
   setRestlessness();
 
@@ -504,6 +504,11 @@ function drawChart(p, H, ph) {
   for (let pp = 0.002; pp < 1; pp += 0.002) d += ` L ${x(pp).toFixed(2)} ${y(entropyBits(pp)).toFixed(2)}`;
   d += ` L ${x(1)} ${y(0)}`;
   svg.appendChild(svgEl('path', { class: 'curve', d }));
+
+  // the law of the curve, written in its own belly
+  const formula = svgEl('text', { class: 'formula', x: x(0.5), y: y(0.3), 'text-anchor': 'middle' });
+  formula.textContent = 'H(p) = −p log₂ p − (1−p) log₂ (1−p)';
+  svg.appendChild(formula);
 
   // what the flips showed (plug-in estimate), drawn under the true dot
   if (ph !== null) {
@@ -612,7 +617,7 @@ els.next.addEventListener('click', nextRound);
 
 /* ---------------- init ---------------- */
 
-console.log('coin-entropy build v8');
+console.log('coin-entropy build v9');
 state.coin = newCoin();
 state.options = makeOptions(state.coin.H);
 renderAnswers();
@@ -638,7 +643,7 @@ if (qs.has('demo') || qs.has('demoplay')) {
     // settle the coin instantly and unfold details so screenshots show everything
     clearTimeout(stampTimer);
     els.coin.classList.remove('spin');
-    setCoinFace('V', fmtBits(state.coin.H, 3));
+    setCoinFace('V', fmtBits(state.coin.H));
     els.moreMath.open = true;
   }
   if (COIN_FACES[qs.get('face')]) setCoinFace(qs.get('face'));
