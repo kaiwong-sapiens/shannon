@@ -24,11 +24,11 @@
 
       <div class="sr-live" aria-live="polite" aria-atomic="true" id="tally-sr"></div>
       <div class="strip" id="strip" aria-hidden="true"></div>
-      <div class="tally-bar" role="img" aria-label="Share of heads and tails so far">
+      <div class="tally-bar" id="tally-bar" role="img" aria-label="Share of heads and tails so far" hidden>
         <div class="seg seg-h" id="seg-h"></div>
         <div class="seg seg-t" id="seg-t"></div>
       </div>
-      <div class="tally-pct"><span id="pct-h"></span><span id="pct-t"></span></div>
+      <div class="tally-pct" id="tally-pct" hidden><span id="pct-h"></span><span id="pct-t"></span></div>
 
       <div class="guess-zone">
         <p class="ask">Its entropy, in bits?</p>

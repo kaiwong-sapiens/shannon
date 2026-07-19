@@ -84,6 +84,7 @@ function makeOptions(H) {
 const $ = (id) => document.getElementById(id);
 const els = {
   coin: $('coin'), coinWob: $('coin-wob'), strip: $('strip'), tallySr: $('tally-sr'),
+  tallyBar: $('tally-bar'), tallyPct: $('tally-pct'),
   segH: $('seg-h'), segT: $('seg-t'), pctH: $('pct-h'), pctT: $('pct-t'),
   answers: $('answers'),
   revealPanel: $('reveal-panel'),
@@ -329,6 +330,8 @@ function flip(n) {
 function renderTally() {
   const n = state.heads + state.tails;
   els.tallySr.textContent = n ? `${state.heads} heads, ${state.tails} tails, ${n} flips` : '';
+  els.tallyBar.hidden = n === 0;   // no empty gauge before the first flip
+  els.tallyPct.hidden = n === 0;
   els.segH.style.flexGrow = state.heads;
   els.segT.style.flexGrow = state.tails;
   els.pctH.textContent = n ? fmtPct(state.heads / n) + ' heads' : '';
