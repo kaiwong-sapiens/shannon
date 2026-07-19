@@ -105,7 +105,7 @@ a { color: inherit; }
 
 /* ---------- play card ---------- */
 
-.coin-zone { display: flex; flex-direction: column; align-items: center; gap: 16px; margin-bottom: 22px; }
+.coin-zone { display: flex; flex-direction: column; align-items: center; gap: 16px; margin-bottom: 20px; }
 
 /* Restlessness: the coin fidgets in proportion to the entropy its flips imply
    (--wob is H(observed p̂), 0..1 — derived only from what the player can see). */
@@ -187,7 +187,7 @@ button:disabled { opacity: 0.4; cursor: default; }
   overflow: hidden; clip-path: inset(50%); white-space: nowrap;
 }
 
-.strip { display: flex; flex-wrap: wrap; gap: 3px; justify-content: center; margin: 0 0 12px; }
+.strip { display: flex; flex-wrap: wrap; gap: 3px; justify-content: center; margin: 0 0 10px; }
 .strip:empty { margin: 0; }
 .chip { width: 10px; height: 10px; border-radius: 3px; }
 .chip-h { background: var(--heads); }
@@ -205,11 +205,11 @@ button:disabled { opacity: 0.4; cursor: default; }
 .seg-h { background: var(--heads); }
 .seg-t { background: var(--tails); }
 
-.tally-pct { display: flex; justify-content: space-between; font-size: 12.5px; color: var(--muted); margin-top: 5px; min-height: 1.2em; }
+.tally-pct { display: flex; justify-content: space-between; font-size: 12.5px; color: var(--muted); margin-top: 6px; min-height: 1.2em; }
 
-/* ---------- guess zone ---------- */
+/* ---------- guess zone (whitespace separates; no rule needed) ---------- */
 
-.guess-zone { border-top: 1.5px solid var(--grid); margin-top: 22px; padding-top: 20px; }
+.guess-zone { margin-top: 28px; }
 
 .ask { text-align: center; font-weight: 800; font-size: 17px; margin: 0 0 14px; }
 
