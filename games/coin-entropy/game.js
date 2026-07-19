@@ -304,7 +304,7 @@ function addChip(isHeads) {
   const chip = document.createElement('span');
   chip.className = 'chip ' + (isHeads ? 'chip-h' : 'chip-t');
   els.strip.appendChild(chip);
-  while (els.strip.children.length > 120) els.strip.removeChild(els.strip.firstChild);
+  while (els.strip.children.length > 22) els.strip.removeChild(els.strip.firstChild);
 }
 
 // Instant bulk flips — used by the ?demo/?demoplay test hooks only.
@@ -325,12 +325,12 @@ function flip(n) {
 function renderTally() {
   const n = state.heads + state.tails;
   els.tallySr.textContent = n ? `${state.heads} heads, ${state.tails} tails, ${n} flips` : '';
-  els.tallyBar.hidden = n === 0;   // no empty gauge before the first flip
-  els.tallyPct.hidden = n === 0;
+  els.tallyBar.classList.toggle('ghost', n === 0);   // space reserved; filled on first flip
+  els.tallyPct.classList.toggle('ghost', n === 0);
   els.segH.style.flexGrow = state.heads;
   els.segT.style.flexGrow = state.tails;
-  els.pctH.textContent = n ? fmtPct(state.heads / n) + ' heads' : '';
-  els.pctT.textContent = n ? fmtPct(state.tails / n) + ' tails' : '';
+  els.pctH.textContent = n ? fmtPct(state.heads / n) + ' heads' : '0% heads';
+  els.pctT.textContent = n ? fmtPct(state.tails / n) + ' tails' : '0% tails';
   setRestlessness();
 }
 
@@ -617,7 +617,7 @@ els.next.addEventListener('click', nextRound);
 
 /* ---------------- init ---------------- */
 
-console.log('coin-entropy build v10');
+console.log('coin-entropy build v11');
 state.coin = newCoin();
 state.options = makeOptions(state.coin.H);
 renderAnswers();

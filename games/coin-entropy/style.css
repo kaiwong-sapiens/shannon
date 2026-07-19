@@ -190,8 +190,10 @@ button:disabled { opacity: 0.4; cursor: default; }
   overflow: hidden; clip-path: inset(50%); white-space: nowrap;
 }
 
-.strip { display: flex; flex-wrap: wrap; gap: 3px; justify-content: center; margin: 0 0 10px; }
-.strip:empty { margin: 0; }
+/* one fixed row of recent flips — the card's height never shifts mid-play */
+.strip { display: flex; flex-wrap: nowrap; overflow: hidden; gap: 3px; justify-content: center; height: 10px; margin: 0 0 10px; }
+
+.ghost { visibility: hidden; } /* reserves its space until the first flip fills it */
 .chip { width: 10px; height: 10px; border-radius: 3px; }
 .chip-h { background: var(--heads); }
 .chip-t { background: var(--tails); }
