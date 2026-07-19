@@ -288,6 +288,7 @@ function releaseCoin() {
   addChip(isHeads);
   renderTally();
 
+  spin.lastFlipTime = performance.now();
   const face = isHeads ? 'H' : 'T';
   if (reducedMotion) {
     spin.base = face;
@@ -297,7 +298,9 @@ function releaseCoin() {
     // visual-only randomness (Math.random, not the game rng): vary the coast
     spin.decel = 700 + Math.random() * 500;
     spin.fricK = 4 + Math.random() * 2.5;
+    spin.vel = Math.max(spin.vel, 900);   // even the quickest tap gets a lively toss
     spin.pending = face;
+    if (!spin.raf) { spin.last = 0; spin.raf = requestAnimationFrame(spinStep); }
   }
 }
 
@@ -591,6 +594,15 @@ els.coin.addEventListener('pointerup', releaseCoin);
 window.addEventListener('pointerup', releaseCoin);
 window.addEventListener('pointercancel', cancelHold);
 els.coin.addEventListener('contextmenu', (ev) => ev.preventDefault());
+
+// Fallback: if a browser swallows the pointer hold (some mobile stacks do),
+// a plain click still performs a full toss.
+els.coin.addEventListener('click', () => {
+  if (state.locked || els.coin.disabled) return;
+  if (performance.now() - (spin.lastFlipTime || 0) < 400) return;   // pointer path already flipped
+  pressCoin();
+  setTimeout(releaseCoin, 140);
+});
 els.coin.addEventListener('keydown', (ev) => {
   if ((ev.key === ' ' || ev.key === 'Enter') && !ev.repeat) {
     ev.preventDefault();

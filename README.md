@@ -67,7 +67,8 @@ often. Scoring starts at 100 and drops 5 points per 0.01 bits of error.
 ## Structure & design
 
 - Each explorable is self-contained under `games/<name>/` (HTML + CSS + JS, no
-  shared runtime), linked from the landing page `index.html`.
+  shared runtime). The multi-game landing page is parked for now — the root
+  `index.html` redirects straight to the coin game while it's a one-off.
 - Light and dark mode via `prefers-color-scheme` (append `?dark` to force dark).
 - Sound is synthesized with the Web Audio API — no audio files. Heads and tails
   land on different notes (E6 / A5), the reveal stamps with a thunk, and a short

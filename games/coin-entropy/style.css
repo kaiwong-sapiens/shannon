@@ -65,7 +65,7 @@
 
 body {
   margin: 0;
-  padding: 18px 16px 56px;
+  padding: 34px 16px 56px;
   background: var(--page);
   color: var(--ink);
   font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
@@ -75,11 +75,7 @@ body {
 
 a { color: inherit; }
 
-/* ---------- top bar + masthead ---------- */
-
-.topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 26px; }
-.crumb a { font-size: 14px; font-weight: 600; color: var(--muted); text-decoration: none; }
-.crumb a:hover { color: var(--ink); }
+/* ---------- masthead ---------- */
 
 .meta-chip {
   font-size: 13px; font-weight: 700; color: var(--ink-2);
