@@ -62,6 +62,9 @@ often. Scoring starts at 100 and drops 5 points per 0.01 bits of error.
 - Each explorable is self-contained under `games/<name>/` (HTML + CSS + JS, no
   shared runtime), linked from the landing page `index.html`.
 - Light and dark mode via `prefers-color-scheme` (append `?dark` to force dark).
+- Sound is synthesized with the Web Audio API — no audio files. Heads and tails
+  land on different notes (E6 / A5), the reveal stamps with a thunk, and a short
+  jingle rises or falls with your accuracy. Mutable via the 🔊 chip; persisted.
 - Chart and category colors were validated for colorblind safety (CVD ΔE) and
   surface contrast in both modes; identity is never carried by color alone.
 - Test hooks: `games/coin-entropy/index.html?demo` renders a deterministic reveal

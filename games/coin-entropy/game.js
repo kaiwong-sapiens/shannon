@@ -64,10 +64,85 @@ const els = {
   insight: $('insight'), mathline: $('mathline'), noise: $('noise'), moreMath: $('more-math'),
   next: $('next'), statRound: $('stat-round'), statScore: $('stat-score'),
   statAvg: $('stat-avg'), statAvgChip: $('stat-avg-chip'),
-  reset: $('reset'),
+  reset: $('reset'), sound: $('sound'),
 };
 
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------------- sound (synthesized — no assets) ---------------- */
+
+const SOUND_KEY = 'shannon-coin-sound';
+let soundOn = true;
+try { soundOn = localStorage.getItem(SOUND_KEY) !== 'off'; } catch (e) { /* ignore */ }
+
+let actx = null;
+let noiseBuf = null;
+
+function audio() {
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if (!AC) return null;
+  if (!actx) {
+    actx = new AC();
+    noiseBuf = actx.createBuffer(1, Math.floor(actx.sampleRate * 0.06), actx.sampleRate);
+    const d = noiseBuf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  }
+  if (actx.state === 'suspended') actx.resume();
+  return actx;
+}
+
+function tone(freq, dur, { type = 'sine', gain = 0.15, at = 0 } = {}) {
+  const ctx = audio();
+  if (!ctx) return;
+  const t = ctx.currentTime + at;
+  const o = ctx.createOscillator();
+  const g = ctx.createGain();
+  o.type = type;
+  o.frequency.value = freq;
+  g.gain.setValueAtTime(gain, t);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  o.connect(g).connect(ctx.destination);
+  o.start(t);
+  o.stop(t + dur + 0.02);
+}
+
+function thud(at = 0) {
+  const ctx = audio();
+  if (!ctx) return;
+  const t = ctx.currentTime + at;
+  const s = ctx.createBufferSource();
+  s.buffer = noiseBuf;
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(0.18, t);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + 0.09);
+  s.connect(g).connect(ctx.destination);
+  s.start(t);
+}
+
+function sfxFlick() { if (soundOn) tone(2400, 0.05, { type: 'triangle', gain: 0.06 }); }
+
+// heads and tails land on different notes — you can hear the bias
+function sfxLand(isHeads) {
+  if (!soundOn) return;
+  const f = isHeads ? 1318.5 : 880;   // E6 vs A5
+  tone(f, 0.35, { type: 'triangle', gain: 0.14 });
+  tone(f * 1.5, 0.22, { type: 'sine', gain: 0.07 });
+}
+
+function sfxStamp() {
+  if (!soundOn) return;
+  thud();
+  tone(150, 0.15, { gain: 0.2 });
+}
+
+function sfxVerdict(err) {
+  if (!soundOn) return;
+  const seq = err <= 0.05 ? [523.25, 659.25, 783.99, 1046.5]   // rising major
+    : err <= 0.10 ? [523.25, 783.99]
+    : err <= 0.20 ? [440]
+    : [392, 311.13];                                            // falling minor
+  seq.forEach((f, i) => tone(f, 0.28, { type: 'triangle', gain: 0.1, at: 0.35 + i * 0.09 }));
+}
 
 /* ---------------- coin faces ---------------- */
 
@@ -121,12 +196,15 @@ function flip(n) {
   const face = last ? 'H' : 'T';
   clearTimeout(spinTimer);
   els.coin.classList.remove('spin', 'bulk');
+  if (n === 1) sfxFlick();
   if (reducedMotion) {
     setCoinFace(face);
+    if (n === 1) sfxLand(last);
   } else if (n === 1) {
     void els.coin.offsetWidth;              // restart the animation
     els.coin.classList.add('spin');
-    spinTimer = setTimeout(() => setCoinFace(face), 250);
+    const landed = last;
+    spinTimer = setTimeout(() => { setCoinFace(face); sfxLand(landed); }, 250);
   } else {
     setCoinFace(face);
     void els.coin.offsetWidth;
@@ -224,13 +302,16 @@ function lock() {
   // the coin turns over and shows its true worth, stamped into the metal
   clearTimeout(spinTimer);
   els.coin.classList.remove('spin', 'bulk');
+  if (soundOn) audio();                    // prime the context inside the click gesture
   if (reducedMotion) {
     setCoinFace('V', fmtBits(H, 3));
+    sfxStamp();
   } else {
     void els.coin.offsetWidth;
     els.coin.classList.add('spin');
-    spinTimer = setTimeout(() => setCoinFace('V', fmtBits(H, 3)), 250);
+    spinTimer = setTimeout(() => { setCoinFace('V', fmtBits(H, 3)); sfxStamp(); }, 250);
   }
+  sfxVerdict(err);
   setRestlessness();
 
   setPlayEnabled(false);
@@ -415,6 +496,18 @@ els.reset.addEventListener('click', (ev) => {
   location.reload();
 });
 
+function updateSoundBtn() {
+  els.sound.textContent = soundOn ? '🔊' : '🔇';
+  els.sound.setAttribute('aria-pressed', String(soundOn));
+  els.sound.setAttribute('aria-label', soundOn ? 'Sound on' : 'Sound off');
+}
+els.sound.addEventListener('click', () => {
+  soundOn = !soundOn;
+  try { localStorage.setItem(SOUND_KEY, soundOn ? 'on' : 'off'); } catch (e) { /* ignore */ }
+  updateSoundBtn();
+  if (soundOn) sfxLand(true);              // audible confirmation
+});
+
 /* ---------------- init ---------------- */
 
 loadLife();
@@ -422,6 +515,7 @@ state.coin = newCoin();
 syncGuess();
 renderTally();
 renderScorebar();
+updateSoundBtn();
 
 // Test/screenshot hooks: ?demo → deterministic flips + locked guess (reveal state),
 // ?demoplay → deterministic flips only. ?dark forces dark mode.
