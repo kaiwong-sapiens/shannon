@@ -2,6 +2,8 @@
 
 **Claude Shannon's ideas, made playable.**
 
+**▶ Play it live: <https://kaiwong-sapiens.github.io/shannon/>**
+
 Small interactive games that turn the foundations of information theory into things
 you can feel. Shannon's 1948 paper *A Mathematical Theory of Communication* invented
 the bit, entropy, and channel capacity — this repo tries to give you the *intuition*
