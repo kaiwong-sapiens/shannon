@@ -34,6 +34,7 @@ const STORE_KEY = 'shannon-coin-entropy-v1';
 
 const state = {
   coin: null,            // { p, H } — p is P(heads)
+  options: [],           // four candidate entropies; one is the coin's
   heads: 0,
   tails: 0,
   locked: false,
@@ -50,13 +51,43 @@ function newCoin() {
   return { p, H: entropyBits(p) };
 }
 
+// Four answers: the truth plus three distractors at graded distances,
+// all ≥ 0.05 bits apart so exactly one option is defensibly right.
+function makeOptions(H) {
+  const sep = 0.05;
+  const r2 = (x) => Math.round(Math.min(1, Math.max(0, x)) * 100) / 100;
+  const vals = [r2(H)];
+  const bands = [[0.06, 0.11], [0.13, 0.2], [0.24, 0.4]];
+  for (const [lo, hi] of bands) {
+    const off = lo + rand() * (hi - lo);
+    const sign = rand() < 0.5 ? -1 : 1;
+    let v = null;
+    for (const s of [sign, -sign]) {
+      const c = r2(H + s * off);
+      if (vals.every((x) => Math.abs(x - c) >= sep)) { v = c; break; }
+    }
+    for (let step = lo; v === null && step <= 1.2; step += 0.06) {
+      for (const s of [1, -1]) {
+        const c = r2(H + s * step);
+        if (vals.every((x) => Math.abs(x - c) >= sep)) { v = c; break; }
+      }
+    }
+    if (v !== null) vals.push(v);
+  }
+  for (let i = vals.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1));
+    [vals[i], vals[j]] = [vals[j], vals[i]];
+  }
+  return vals;
+}
+
 /* ---------------- dom ---------------- */
 
 const $ = (id) => document.getElementById(id);
 const els = {
-  coin: $('coin'), strip: $('strip'), tallySr: $('tally-sr'),
+  coin: $('coin'), coinWob: $('coin-wob'), strip: $('strip'), tallySr: $('tally-sr'),
   segH: $('seg-h'), segT: $('seg-t'), pctH: $('pct-h'), pctT: $('pct-t'),
-  guess: $('guess'), guessOut: $('guess-out'), lock: $('lock'),
+  answers: $('answers'),
   revealPanel: $('reveal-panel'),
   verdict: $('verdict'), verdictSub: $('verdict-sub'),
   chipCoin: $('chip-coin'), chipTrue: $('chip-true'), chipFlips: $('chip-flips'),
@@ -168,7 +199,7 @@ function setCoinFace(face, stampValue) {
 function setRestlessness() {
   const n = state.heads + state.tails;
   const wob = !state.locked && n ? entropyBits(state.heads / n) : 0;
-  document.getElementById('coin-wob').style.setProperty('--wob', wob.toFixed(3));
+  els.coinWob.style.setProperty('--wob', wob.toFixed(3));
 }
 
 /* ---------------- formatting ---------------- */
@@ -176,10 +207,110 @@ function setRestlessness() {
 const fmtPct = (p) => (Math.round(p * 1000) / 10).toFixed(1).replace(/\.0$/, '') + '%';
 const fmtBits = (h, dp = 2) => h.toFixed(dp);
 
-/* ---------------- flipping ---------------- */
+/* ---------------- flipping: press to spin, release to coast and land ---------------- */
 
-let spinTimer = null;
+const SPIN_MAX = 1500;   // deg/s while held
+let stampTimer = null;
+const spin = {
+  angle: 0, vel: 0, last: 0, raf: null,
+  holding: false, base: '?', pending: null, showing: null,
+};
 
+function abortSpin() {
+  if (spin.raf) cancelAnimationFrame(spin.raf);
+  spin.raf = null;
+  spin.vel = 0;
+  spin.angle = 0;
+  spin.last = 0;
+  spin.holding = false;
+  spin.pending = null;
+  spin.showing = null;
+  els.coin.style.transform = '';
+}
+
+function endSpin(face) {
+  const landed = face || spin.base;
+  abortSpin();
+  spin.base = landed;
+  setCoinFace(landed);
+  if (face) sfxLand(face === 'H');
+}
+
+function spinStep(ts) {
+  if (!spin.last) spin.last = ts;
+  const dt = Math.min(0.05, (ts - spin.last) / 1000);
+  spin.last = ts;
+
+  if (spin.holding) {
+    spin.vel += (SPIN_MAX - spin.vel) * Math.min(1, dt * 6);
+    spin.angle += spin.vel * dt;
+  } else if (spin.pending === null) {
+    spin.vel = Math.max(0, spin.vel - (500 + spin.vel * 2.2) * dt);
+    spin.angle += spin.vel * dt;
+    if (spin.vel === 0) { endSpin(null); return; }
+  } else if (spin.vel > 300) {
+    spin.vel = Math.max(0, spin.vel - (500 + spin.vel * 2.2) * dt);
+    spin.angle += spin.vel * dt;
+  } else {
+    // slow enough: glide to the next front-facing turn and land the outcome
+    spin.base = spin.pending;
+    const a = ((spin.angle % 360) + 360) % 360;
+    const rem = (360 - a) % 360;
+    if (rem < 3) { endSpin(spin.pending); return; }
+    spin.angle += Math.max(140 * dt, rem * Math.min(1, dt * 9));
+  }
+
+  const a = ((spin.angle % 360) + 360) % 360;
+  const back = a > 90 && a < 270;
+  const alt = spin.base === 'T' ? 'H' : 'T';
+  const show = back ? alt : spin.base;
+  if (show !== spin.showing) {
+    spin.showing = show;
+    setCoinFace(show);
+  }
+  els.coin.style.transform = `rotateY(${a}deg)${back ? ' scaleX(-1)' : ''}`;
+  spin.raf = requestAnimationFrame(spinStep);
+}
+
+function pressCoin() {
+  if (state.locked || els.coin.disabled) return;
+  spin.holding = true;
+  sfxFlick();
+  if (spin.base === '?') spin.base = 'H';
+  if (!reducedMotion && !spin.raf) {
+    spin.last = 0;
+    spin.raf = requestAnimationFrame(spinStep);
+  }
+}
+
+function releaseCoin() {
+  const wasHolding = spin.holding;
+  spin.holding = false;
+  if (!wasHolding || state.locked) return;
+
+  const isHeads = rand() < state.coin.p;
+  if (isHeads) state.heads++; else state.tails++;
+  addChip(isHeads);
+  renderTally();
+
+  const face = isHeads ? 'H' : 'T';
+  if (reducedMotion) {
+    spin.base = face;
+    setCoinFace(face);
+    sfxLand(isHeads);
+  } else {
+    spin.pending = face;
+  }
+}
+
+function addChip(isHeads) {
+  const chip = document.createElement('span');
+  chip.className = 'chip ' + (isHeads ? 'chip-h' : 'chip-t');
+  els.strip.appendChild(chip);
+  while (els.strip.children.length > 120) els.strip.removeChild(els.strip.firstChild);
+}
+
+// Instant bulk flips — used by the ?demo/?demoplay test hooks only.
 function flip(n) {
   if (state.locked) return;
   let last = false;
@@ -187,29 +318,10 @@ function flip(n) {
     const isHeads = rand() < state.coin.p;
     if (isHeads) state.heads++; else state.tails++;
     last = isHeads;
-    const chip = document.createElement('span');
-    chip.className = 'chip ' + (isHeads ? 'chip-h' : 'chip-t');
-    els.strip.appendChild(chip);
+    addChip(isHeads);
   }
-  while (els.strip.children.length > 120) els.strip.removeChild(els.strip.firstChild);
-
-  const face = last ? 'H' : 'T';
-  clearTimeout(spinTimer);
-  els.coin.classList.remove('spin', 'bulk');
-  if (n === 1) sfxFlick();
-  if (reducedMotion) {
-    setCoinFace(face);
-    if (n === 1) sfxLand(last);
-  } else if (n === 1) {
-    void els.coin.offsetWidth;              // restart the animation
-    els.coin.classList.add('spin');
-    const landed = last;
-    spinTimer = setTimeout(() => { setCoinFace(face); sfxLand(landed); }, 250);
-  } else {
-    setCoinFace(face);
-    void els.coin.offsetWidth;
-    els.coin.classList.add('bulk');
-  }
+  spin.base = last ? 'H' : 'T';
+  setCoinFace(spin.base);
   renderTally();
 }
 
@@ -223,12 +335,28 @@ function renderTally() {
   setRestlessness();
 }
 
-/* ---------------- guessing & scoring ---------------- */
+/* ---------------- answers & scoring ---------------- */
 
-function syncGuess() {
-  const v = Number(els.guess.value);
-  els.guessOut.textContent = v.toFixed(2);
-  els.guess.style.setProperty('--fill', (v * 100) + '%');
+function renderAnswers() {
+  els.answers.innerHTML = '';
+  for (const v of state.options) {
+    const b = document.createElement('button');
+    b.className = 'answer';
+    b.textContent = v.toFixed(2);
+    b.addEventListener('click', () => answer(v, b));
+    els.answers.appendChild(b);
+  }
+}
+
+function answer(guess, btn) {
+  if (state.locked) return;
+  lock(guess);
+  btn.classList.add('chosen');
+  const trueV = state.options.reduce((a, b) =>
+    (Math.abs(b - state.coin.H) < Math.abs(a - state.coin.H) ? b : a));
+  for (const el of els.answers.children) {
+    if (Number(el.textContent) === trueV) el.classList.add('is-true');
+  }
 }
 
 function verdictFor(err) {
@@ -251,11 +379,11 @@ function insightFor(p, H) {
   return `Nearly one-sided — near-certainty carries almost no information.`;
 }
 
-function lock() {
+function lock(guess) {
   if (state.locked) return;
   state.locked = true;
+  abortSpin();
 
-  const guess = Number(els.guess.value);
   const { p, H } = state.coin;
   const err = Math.abs(guess - H);
   const pts = Math.max(0, Math.round(100 - 500 * err));
@@ -300,8 +428,6 @@ function lock() {
   els.legendObs.hidden = ph === null;
 
   // the coin turns over and shows its true worth, stamped into the metal
-  clearTimeout(spinTimer);
-  els.coin.classList.remove('spin', 'bulk');
   if (soundOn) audio();                    // prime the context inside the click gesture
   if (reducedMotion) {
     setCoinFace('V', fmtBits(H, 3));
@@ -309,7 +435,7 @@ function lock() {
   } else {
     void els.coin.offsetWidth;
     els.coin.classList.add('spin');
-    spinTimer = setTimeout(() => { setCoinFace('V', fmtBits(H, 3)); sfxStamp(); }, 250);
+    stampTimer = setTimeout(() => { setCoinFace('V', fmtBits(H, 3)); sfxStamp(); }, 250);
   }
   sfxVerdict(err);
   setRestlessness();
@@ -321,14 +447,18 @@ function lock() {
 }
 
 function nextRound() {
+  abortSpin();
+  clearTimeout(stampTimer);
+  els.coin.classList.remove('spin');
   state.coin = newCoin();
+  state.options = makeOptions(state.coin.H);
   state.heads = 0;
   state.tails = 0;
   state.locked = false;
   els.strip.innerHTML = '';
+  spin.base = '?';
   setCoinFace('?');
-  els.guess.value = '0.5';
-  syncGuess();
+  renderAnswers();
   renderTally();
   els.revealPanel.hidden = true;
   els.moreMath.open = false;
@@ -338,7 +468,8 @@ function nextRound() {
 }
 
 function setPlayEnabled(on) {
-  [els.coin, els.guess, els.lock].forEach((el) => { el.disabled = !on; });
+  els.coin.disabled = !on;
+  for (const b of els.answers.children) b.disabled = !on;
 }
 
 function renderScorebar() {
@@ -416,7 +547,7 @@ function drawChart(p, H, ph, guess) {
     class: 'guesslabel', x: M.l + 6,
     y: y(guess) + (y(guess) < M.t + 18 ? 15 : -7),
   });
-  gLabel.textContent = `your guess · ${fmtBits(guess)}`;
+  gLabel.textContent = `your pick · ${fmtBits(guess)}`;
   svg.appendChild(gLabel);
 
   // what the flips showed (plug-in estimate), drawn under the true dot
@@ -486,9 +617,22 @@ function drawChart(p, H, ph, guess) {
 
 /* ---------------- wiring ---------------- */
 
-els.coin.addEventListener('click', () => flip(1));
-els.guess.addEventListener('input', syncGuess);
-els.lock.addEventListener('click', lock);
+els.coin.addEventListener('pointerdown', (ev) => {
+  ev.preventDefault();
+  pressCoin();
+});
+window.addEventListener('pointerup', releaseCoin);
+window.addEventListener('pointercancel', releaseCoin);
+els.coin.addEventListener('keydown', (ev) => {
+  if ((ev.key === ' ' || ev.key === 'Enter') && !ev.repeat) {
+    ev.preventDefault();
+    pressCoin();
+  }
+});
+els.coin.addEventListener('keyup', (ev) => {
+  if (ev.key === ' ' || ev.key === 'Enter') releaseCoin();
+});
+
 els.next.addEventListener('click', nextRound);
 els.reset.addEventListener('click', (ev) => {
   ev.preventDefault();
@@ -512,25 +656,32 @@ els.sound.addEventListener('click', () => {
 
 loadLife();
 state.coin = newCoin();
-syncGuess();
-renderTally();
-renderScorebar();
-updateSoundBtn();
+state.options = makeOptions(state.coin.H);
+renderAnswers();
+syncInit();
 
-// Test/screenshot hooks: ?demo → deterministic flips + locked guess (reveal state),
-// ?demoplay → deterministic flips only. ?dark forces dark mode.
+function syncInit() {
+  renderTally();
+  renderScorebar();
+  updateSoundBtn();
+}
+
+// Test/screenshot hooks: ?demo → deterministic flips + answered round (reveal state),
+// ?demoplay → deterministic flips only. ?dark forces dark. ?face=H|T forces a face.
 const qs = new URLSearchParams(location.search);
 if (qs.has('dark')) document.documentElement.dataset.theme = 'dark';
 if (qs.has('demo') || qs.has('demoplay')) {
   seedRand(42);
   state.coin = { p: 0.72, H: entropyBits(0.72) };
+  state.options = makeOptions(state.coin.H);
+  renderAnswers();
   flip(60);
   if (qs.has('demo')) {
-    els.guess.value = '0.79';
-    syncGuess();
-    lock();
+    const pick = state.options.reduce((a, b) => (Math.abs(b - 0.79) < Math.abs(a - 0.79) ? b : a));
+    const btn = [...els.answers.children].find((el) => Number(el.textContent) === pick);
+    answer(pick, btn);
     // settle the coin instantly so screenshots are deterministic
-    clearTimeout(spinTimer);
+    clearTimeout(stampTimer);
     els.coin.classList.remove('spin');
     setCoinFace('V', fmtBits(state.coin.H, 3));
   }

@@ -23,7 +23,7 @@
 
   <header class="masthead">
     <h1>Guess the Coin's Entropy</h1>
-    <p class="tagline">Every coin carries its own amount of surprise. Flip this one, feel it out, then guess <strong>its entropy</strong>.</p>
+    <p class="tagline">Every coin carries its own amount of surprise. Flip this one, feel it out, then pick <strong>its entropy</strong>.</p>
   </header>
 
   <main>
@@ -41,15 +41,9 @@
       <div class="tally-pct"><span id="pct-h"></span><span id="pct-t"></span></div>
 
       <div class="guess-zone">
-        <div class="guess-value">
-          <output id="guess-out" for="guess">0.50</output>
-          <span class="unit">its entropy, in bits</span>
-        </div>
-        <input type="range" class="guess-slider" id="guess" min="0" max="1" step="0.01" value="0.5" aria-label="Your guess at the coin's entropy, in bits">
-        <div class="slider-ends"><span>0 · certain</span><span>1 · 50/50</span></div>
+        <p class="ask">Its entropy, in bits?</p>
+        <div class="answers" id="answers" aria-label="Pick the coin's entropy, in bits"></div>
       </div>
-
-      <button class="btn btn-primary" id="lock">Check</button>
     </section>
 
     <section class="card reveal-card" id="reveal-panel" hidden>
@@ -69,7 +63,7 @@
         <div class="chart-legend">
           <span><span class="ckey ckey-true"></span>the coin</span>
           <span id="legend-obs"><span class="ckey ckey-obs"></span>your flips</span>
-          <span><span class="ckey ckey-guess"></span>your guess</span>
+          <span><span class="ckey ckey-guess"></span>your pick</span>
         </div>
       </figure>
 

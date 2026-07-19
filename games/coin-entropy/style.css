@@ -210,36 +210,24 @@ button:disabled { opacity: 0.4; cursor: default; }
 
 .guess-zone { border-top: 1.5px solid var(--grid); margin-top: 22px; padding-top: 20px; }
 
-.guess-value { text-align: center; margin-bottom: 10px; }
-.guess-value output { font-size: 44px; font-weight: 800; letter-spacing: -0.02em; display: block; }
-.guess-value .unit { font-size: 13.5px; font-weight: 600; color: var(--muted); }
+.ask { text-align: center; font-weight: 800; font-size: 17px; margin: 0 0 14px; }
 
-.guess-slider { -webkit-appearance: none; appearance: none; width: 100%; height: 36px; background: transparent; margin: 0; --fill: 50%; }
-.guess-slider::-webkit-slider-runnable-track {
-  height: 8px; border-radius: 999px;
-  background: linear-gradient(90deg, var(--ink) var(--fill), var(--grid) var(--fill));
+.answers { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.answer {
+  font: 800 22px/1 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color: var(--ink);
+  background: var(--surface);
+  border: 2px solid var(--grid);
+  border-radius: 16px;
+  padding: 18px 10px;
+  cursor: pointer;
 }
-.guess-slider::-webkit-slider-thumb {
-  -webkit-appearance: none; appearance: none;
-  width: 28px; height: 28px; margin-top: -10px;
-  border-radius: 50%; background: var(--ink);
-  border: 4px solid var(--surface);
-  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.3);
-  cursor: grab;
-}
-.guess-slider::-moz-range-track {
-  height: 8px; border-radius: 999px;
-  background: linear-gradient(90deg, var(--ink) var(--fill), var(--grid) var(--fill));
-}
-.guess-slider::-moz-range-thumb {
-  width: 20px; height: 20px;
-  border-radius: 50%; background: var(--ink);
-  border: 4px solid var(--surface);
-  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.3);
-  cursor: grab;
-}
-
-.slider-ends { display: flex; justify-content: space-between; font-size: 12.5px; font-weight: 600; color: var(--muted); margin-top: 4px; }
+.answer:hover:not(:disabled) { border-color: var(--axis); transform: translateY(-1px); }
+.answer:active:not(:disabled) { transform: scale(0.97); }
+.answer:disabled { opacity: 0.45; cursor: default; }
+.answer.chosen { background: var(--ink); color: var(--page); border-color: var(--ink); opacity: 1; }
+.answer.is-true { border-color: var(--true); opacity: 1; }
+.answer.is-true::after { content: " ✓"; }
 
 /* ---------- reveal card ---------- */
 
