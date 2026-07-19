@@ -51,9 +51,11 @@ What it's designed to teach:
   The reveal quantifies that noise floor, so you know when your miss was just luck.
 
 The math, for the curious: entropy of a coin with heads-probability *p* is
-`H(p) = −p·log₂p − (1−p)·log₂(1−p)` bits. Hidden coins are sampled *uniformly in
+`H(p) = −p·log₂p − (1−p)·log₂(1−p)` bits. The first two rounds are a fixed
+curriculum — the poles of the curve: a perfectly fair coin (exactly 1 bit), then
+a one-sided coin (0 bits). After that, hidden coins are sampled *uniformly in
 entropy* (not in bias) so low-, mid-, and high-entropy coins all show up equally
-often. Scoring starts at 100 and drops 5 points per 0.01 bits of error.
+often, with the fair and one-sided anchors recurring occasionally (10% / 6%).
 
 ## Roadmap
 

@@ -39,10 +39,20 @@ const state = {
   locked: false,
 };
 
-// Sample the target *entropy* uniformly, then invert to a bias. Sampling the bias
-// uniformly would make almost every coin look near-fair (H > 0.9 for p in .32–.68).
+// The first two rounds are a curriculum: the poles of the curve, guaranteed.
+// Round 1: the perfectly fair coin (exactly 1 bit). Round 2: a one-sided coin
+// (0 bits). After that, coins are random with both anchors recurring.
+const curriculum = ['fair', 'onesided'];
+
+// Random coins sample the target *entropy* uniformly, then invert to a bias.
+// Sampling the bias uniformly would make almost every coin look near-fair
+// (H > 0.9 for p in .32–.68).
 function newCoin() {
-  if (rand() < 0.1) return { p: 0.5, H: 1 };   // the classic 1-bit anchor
+  const special = curriculum.shift();
+  if (special === 'fair' || (!special && rand() < 0.1)) return { p: 0.5, H: 1 };
+  if (special === 'onesided' || (!special && rand() < 0.06)) {
+    return { p: rand() < 0.5 ? 0 : 1, H: 0 };
+  }
   let p = biasForEntropy(rand());
   if (rand() < 0.5) p = 1 - p;
   p = Math.round(p * 1000) / 1000;
@@ -617,7 +627,7 @@ els.next.addEventListener('click', nextRound);
 
 /* ---------------- init ---------------- */
 
-console.log('coin-entropy build v11');
+console.log('coin-entropy build v12');
 state.coin = newCoin();
 state.options = makeOptions(state.coin.H);
 renderAnswers();
@@ -625,8 +635,15 @@ renderTally();
 
 // Test/screenshot hooks: ?demo → deterministic flips + answered round (reveal state),
 // ?demoplay → deterministic flips only. ?dark forces dark. ?face=H|T forces a face.
+// ?p=0.7 forces the coin's bias (testing).
 const qs = new URLSearchParams(location.search);
 if (qs.has('dark')) document.documentElement.dataset.theme = 'dark';
+if (qs.get('p') !== null && !qs.has('demo') && !qs.has('demoplay')) {
+  const fp = Math.min(1, Math.max(0, Number(qs.get('p')) || 0));
+  state.coin = { p: fp, H: entropyBits(fp) };
+  state.options = makeOptions(state.coin.H);
+  renderAnswers();
+}
 if (qs.has('demo') || qs.has('demoplay')) {
   seedRand(42);
   state.coin = { p: 0.72, H: entropyBits(0.72) };
