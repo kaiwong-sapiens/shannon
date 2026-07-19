@@ -279,7 +279,7 @@ function spinStep(ts) {
 }
 
 function pressCoin() {
-  if (state.locked || els.coin.disabled) return;
+  if (els.coin.disabled) return;
   spin.holding = true;
   sfxFlick();
   if (spin.base === '?') spin.base = 'H';
@@ -291,10 +291,12 @@ function pressCoin() {
   }
 }
 
+// Flipping stays open even after the reveal — if your 21 flips were all heads
+// on a 90/10 coin, keep going and watch the missing side finally show up.
 function releaseCoin() {
   const wasHolding = spin.holding;
   spin.holding = false;
-  if (!wasHolding || state.locked) return;
+  if (!wasHolding) return;
 
   const isHeads = rand() < state.coin.p;
   if (isHeads) state.heads++; else state.tails++;
@@ -433,7 +435,10 @@ function lock() {
   // the coin turns over and shows its true worth, stamped into the metal
   void els.coin.offsetWidth;
   els.coin.classList.add('spin');
-  stampTimer = setTimeout(() => { setCoinFace('V', fmtBits(H)); sfxStamp(); }, 250);
+  stampTimer = setTimeout(() => {
+    if (!spin.raf) setCoinFace('V', fmtBits(H));   // unless it's already spinning again
+    sfxStamp();
+  }, 250);
   sfxCorrect();
   setRestlessness();
 
@@ -465,7 +470,7 @@ function nextRound() {
 }
 
 function setPlayEnabled(on) {
-  els.coin.disabled = !on;
+  // only the answers lock after a round; the coin itself never stops flipping
   for (const b of els.answers.children) b.disabled = !on;
 }
 
@@ -608,7 +613,7 @@ window.addEventListener('touchend', () => audio(), { once: true, passive: true }
 // Fallback: if a browser swallows the pointer hold (some mobile stacks do),
 // a plain click still performs a full toss.
 els.coin.addEventListener('click', () => {
-  if (state.locked || els.coin.disabled) return;
+  if (els.coin.disabled) return;
   if (performance.now() - (spin.lastFlipTime || 0) < 400) return;   // pointer path already flipped
   pressCoin();
   setTimeout(releaseCoin, 140);
@@ -627,7 +632,7 @@ els.next.addEventListener('click', nextRound);
 
 /* ---------------- init ---------------- */
 
-console.log('coin-entropy build v12');
+console.log('coin-entropy build v13');
 state.coin = newCoin();
 state.options = makeOptions(state.coin.H);
 renderAnswers();
