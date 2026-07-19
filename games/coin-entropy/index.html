@@ -30,23 +30,18 @@
       <div class="coin-zone">
         <span class="coin-wob" id="coin-wob"><button class="coin" id="coin" aria-label="Flip the coin once"><span class="coin-glyph">?</span></button></span>
         <div class="flip-controls">
-          <button class="btn" id="flip-1" aria-label="Flip once">Flip</button>
           <button class="btn" id="flip-10" aria-label="Flip ten times">×10</button>
           <button class="btn" id="flip-100" aria-label="Flip one hundred times">×100</button>
         </div>
       </div>
 
-      <div class="tally-legend" aria-live="polite" aria-atomic="true">
-        <span class="key"><span class="swatch swatch-h"></span><b id="count-h">0</b> heads</span>
-        <span class="key"><span class="swatch swatch-t"></span><b id="count-t">0</b> tails</span>
-        <span class="key"><b id="count-n">0</b> flips</span>
-      </div>
+      <div class="sr-live" aria-live="polite" aria-atomic="true" id="tally-sr"></div>
+      <div class="strip" id="strip" aria-hidden="true"></div>
       <div class="tally-bar" role="img" aria-label="Share of heads and tails so far">
         <div class="seg seg-h" id="seg-h"></div>
         <div class="seg seg-t" id="seg-t"></div>
       </div>
       <div class="tally-pct"><span id="pct-h"></span><span id="pct-t"></span></div>
-      <div class="strip" id="strip" aria-hidden="true"></div>
 
       <div class="guess-zone">
         <div class="guess-value">

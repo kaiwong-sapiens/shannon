@@ -54,10 +54,9 @@ function newCoin() {
 
 const $ = (id) => document.getElementById(id);
 const els = {
-  coin: $('coin'), strip: $('strip'),
-  countH: $('count-h'), countT: $('count-t'), countN: $('count-n'),
+  coin: $('coin'), strip: $('strip'), tallySr: $('tally-sr'),
   segH: $('seg-h'), segT: $('seg-t'), pctH: $('pct-h'), pctT: $('pct-t'),
-  flip1: $('flip-1'), flip10: $('flip-10'), flip100: $('flip-100'),
+  flip10: $('flip-10'), flip100: $('flip-100'),
   guess: $('guess'), guessOut: $('guess-out'), lock: $('lock'),
   revealPanel: $('reveal-panel'),
   verdict: $('verdict'), verdictSub: $('verdict-sub'),
@@ -139,9 +138,7 @@ function flip(n) {
 
 function renderTally() {
   const n = state.heads + state.tails;
-  els.countH.textContent = state.heads;
-  els.countT.textContent = state.tails;
-  els.countN.textContent = n;
+  els.tallySr.textContent = n ? `${state.heads} heads, ${state.tails} tails, ${n} flips` : '';
   els.segH.style.flexGrow = state.heads;
   els.segT.style.flexGrow = state.tails;
   els.pctH.textContent = n ? fmtPct(state.heads / n) + ' heads' : '';
@@ -261,7 +258,7 @@ function nextRound() {
 }
 
 function setPlayEnabled(on) {
-  [els.coin, els.flip1, els.flip10, els.flip100, els.guess, els.lock].forEach((el) => { el.disabled = !on; });
+  [els.coin, els.flip10, els.flip100, els.guess, els.lock].forEach((el) => { el.disabled = !on; });
 }
 
 function renderScorebar() {
@@ -410,7 +407,6 @@ function drawChart(p, H, ph, guess) {
 /* ---------------- wiring ---------------- */
 
 els.coin.addEventListener('click', () => flip(1));
-els.flip1.addEventListener('click', () => flip(1));
 els.flip10.addEventListener('click', () => flip(10));
 els.flip100.addEventListener('click', () => flip(100));
 els.guess.addEventListener('input', syncGuess);

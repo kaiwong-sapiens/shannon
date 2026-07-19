@@ -142,7 +142,8 @@ a { color: inherit; }
 .coin-icon { width: 52px; height: 52px; fill: currentColor; }
 .coin-cap { font-size: 12.5px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; }
 .coin-value { font-size: 31px; font-weight: 800; letter-spacing: -0.01em; }
-.coin:active:not(:disabled) { transform: scale(0.96); }
+.coin:hover:not(:disabled) { transform: scale(1.04); filter: brightness(1.06); }
+.coin:active:not(:disabled) { transform: scale(0.96); filter: none; }
 .coin.spin { animation: spin 0.5s ease; }
 .coin.bulk { animation: pulse 0.3s ease; }
 @keyframes spin { from { transform: rotateY(0); } to { transform: rotateY(720deg); } }
@@ -180,15 +181,16 @@ button:disabled { opacity: 0.4; cursor: default; }
 
 /* ---------- tally ---------- */
 
-.tally-legend {
-  display: flex; justify-content: center; gap: 18px; flex-wrap: wrap;
-  font-size: 14px; color: var(--ink-2); margin-bottom: 10px;
+.sr-live {
+  position: absolute; width: 1px; height: 1px; margin: -1px;
+  overflow: hidden; clip-path: inset(50%); white-space: nowrap;
 }
-.tally-legend b { color: var(--ink); font-weight: 700; }
-.key { display: inline-flex; align-items: center; gap: 6px; }
-.swatch { width: 11px; height: 11px; border-radius: 4px; display: inline-block; }
-.swatch-h { background: var(--heads); }
-.swatch-t { background: var(--tails); }
+
+.strip { display: flex; flex-wrap: wrap; gap: 3px; justify-content: center; margin: 0 0 12px; }
+.strip:empty { margin: 0; }
+.chip { width: 10px; height: 10px; border-radius: 3px; }
+.chip-h { background: var(--heads); }
+.chip-t { background: var(--tails); }
 
 .tally-bar {
   display: flex;
@@ -203,11 +205,6 @@ button:disabled { opacity: 0.4; cursor: default; }
 .seg-t { background: var(--tails); }
 
 .tally-pct { display: flex; justify-content: space-between; font-size: 12.5px; color: var(--muted); margin-top: 5px; min-height: 1.2em; }
-
-.strip { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 12px; justify-content: center; }
-.chip { width: 10px; height: 10px; border-radius: 3px; }
-.chip-h { background: var(--heads); }
-.chip-t { background: var(--tails); }
 
 /* ---------- guess zone ---------- */
 
