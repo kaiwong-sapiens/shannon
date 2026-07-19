@@ -305,8 +305,11 @@ footer a { color: var(--ink-2); }
 
 /* ---------- motion ---------- */
 
+.buildtag { text-align: center; font-size: 11px; color: var(--muted); margin: 28px 0 0; }
+
 @media (prefers-reduced-motion: reduce) {
-  .coin.spin, .coin.bulk, .coin-wob, .answer.wrong { animation: none; }
+  /* ambient/decorative motion off; the user-triggered coin toss stays */
+  .coin-wob, .answer.wrong { animation: none; }
   .seg { transition: none; }
   .btn:active:not(:disabled), .coin:active:not(:disabled) { transform: none; }
 }

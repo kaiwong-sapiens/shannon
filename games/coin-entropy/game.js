@@ -273,7 +273,9 @@ function pressCoin() {
   spin.holding = true;
   sfxFlick();
   if (spin.base === '?') spin.base = 'H';
-  if (!reducedMotion && !spin.raf) {
+  // The toss is user-triggered, essential feedback — it animates even under
+  // prefers-reduced-motion (ambient effects stay disabled there).
+  if (!spin.raf) {
     spin.last = 0;
     spin.raf = requestAnimationFrame(spinStep);
   }
@@ -290,19 +292,12 @@ function releaseCoin() {
   renderTally();
 
   spin.lastFlipTime = performance.now();
-  const face = isHeads ? 'H' : 'T';
-  if (reducedMotion) {
-    spin.base = face;
-    setCoinFace(face);
-    sfxLand(isHeads);
-  } else {
-    // visual-only randomness (Math.random, not the game rng): vary the coast
-    spin.decel = 700 + Math.random() * 500;
-    spin.fricK = 4 + Math.random() * 2.5;
-    spin.vel = Math.max(spin.vel, 900);   // even the quickest tap gets a lively toss
-    spin.pending = face;
-    if (!spin.raf) { spin.last = 0; spin.raf = requestAnimationFrame(spinStep); }
-  }
+  // visual-only randomness (Math.random, not the game rng): vary the coast
+  spin.decel = 700 + Math.random() * 500;
+  spin.fricK = 4 + Math.random() * 2.5;
+  spin.vel = Math.max(spin.vel, 900);   // even the quickest tap gets a lively toss
+  spin.pending = isHeads ? 'H' : 'T';
+  if (!spin.raf) { spin.last = 0; spin.raf = requestAnimationFrame(spinStep); }
 }
 
 function addChip(isHeads) {
@@ -426,14 +421,9 @@ function lock() {
   els.legendObs.hidden = ph === null;
 
   // the coin turns over and shows its true worth, stamped into the metal
-  if (reducedMotion) {
-    setCoinFace('V', fmtBits(H, 3));
-    sfxStamp();
-  } else {
-    void els.coin.offsetWidth;
-    els.coin.classList.add('spin');
-    stampTimer = setTimeout(() => { setCoinFace('V', fmtBits(H, 3)); sfxStamp(); }, 250);
-  }
+  void els.coin.offsetWidth;
+  els.coin.classList.add('spin');
+  stampTimer = setTimeout(() => { setCoinFace('V', fmtBits(H, 3)); sfxStamp(); }, 250);
   sfxCorrect();
   setRestlessness();
 
@@ -597,6 +587,8 @@ els.coin.addEventListener('pointerup', releaseCoin);
 window.addEventListener('pointerup', releaseCoin);
 window.addEventListener('pointercancel', cancelHold);
 els.coin.addEventListener('contextmenu', (ev) => ev.preventDefault());
+// iOS unlocks WebAudio only inside a genuine user gesture — prime it once.
+window.addEventListener('touchend', () => audio(), { once: true, passive: true });
 
 // Fallback: if a browser swallows the pointer hold (some mobile stacks do),
 // a plain click still performs a full toss.
@@ -620,7 +612,7 @@ els.next.addEventListener('click', nextRound);
 
 /* ---------------- init ---------------- */
 
-console.log('coin-entropy build v7');
+console.log('coin-entropy build v8');
 state.coin = newCoin();
 state.options = makeOptions(state.coin.H);
 renderAnswers();
