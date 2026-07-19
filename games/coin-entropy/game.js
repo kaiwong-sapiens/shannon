@@ -56,7 +56,6 @@ const $ = (id) => document.getElementById(id);
 const els = {
   coin: $('coin'), strip: $('strip'), tallySr: $('tally-sr'),
   segH: $('seg-h'), segT: $('seg-t'), pctH: $('pct-h'), pctT: $('pct-t'),
-  flip10: $('flip-10'), flip100: $('flip-100'),
   guess: $('guess'), guessOut: $('guess-out'), lock: $('lock'),
   revealPanel: $('reveal-panel'),
   verdict: $('verdict'), verdictSub: $('verdict-sub'),
@@ -258,7 +257,7 @@ function nextRound() {
 }
 
 function setPlayEnabled(on) {
-  [els.coin, els.flip10, els.flip100, els.guess, els.lock].forEach((el) => { el.disabled = !on; });
+  [els.coin, els.guess, els.lock].forEach((el) => { el.disabled = !on; });
 }
 
 function renderScorebar() {
@@ -407,8 +406,6 @@ function drawChart(p, H, ph, guess) {
 /* ---------------- wiring ---------------- */
 
 els.coin.addEventListener('click', () => flip(1));
-els.flip10.addEventListener('click', () => flip(10));
-els.flip100.addEventListener('click', () => flip(100));
 els.guess.addEventListener('input', syncGuess);
 els.lock.addEventListener('click', lock);
 els.next.addEventListener('click', nextRound);

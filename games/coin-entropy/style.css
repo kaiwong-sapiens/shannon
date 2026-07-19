@@ -149,8 +149,6 @@ a { color: inherit; }
 @keyframes spin { from { transform: rotateY(0); } to { transform: rotateY(720deg); } }
 @keyframes pulse { 50% { transform: scale(1.08); } }
 
-.flip-controls { display: flex; gap: 8px; }
-
 /* ---------- buttons (pills) ---------- */
 
 .btn {
