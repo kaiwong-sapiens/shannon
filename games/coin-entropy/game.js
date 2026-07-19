@@ -59,14 +59,13 @@ const els = {
   segH: $('seg-h'), segT: $('seg-t'), pctH: $('pct-h'), pctT: $('pct-t'),
   flip1: $('flip-1'), flip10: $('flip-10'), flip100: $('flip-100'),
   guess: $('guess'), guessOut: $('guess-out'), lock: $('lock'),
-  guessPanel: $('guess-panel'), revealPanel: $('reveal-panel'),
-  verdict: $('verdict'), flavor: $('flavor'),
-  tileCoinV: $('tile-coin-v'), tileCoinS: $('tile-coin-s'),
-  tileHV: $('tile-h-v'), tileGuessV: $('tile-guess-v'), tileGuessS: $('tile-guess-s'),
-  tileRoundV: $('tile-round-v'), tileRoundS: $('tile-round-s'),
+  revealPanel: $('reveal-panel'),
+  verdict: $('verdict'), verdictSub: $('verdict-sub'),
+  chipCoin: $('chip-coin'), chipTrue: $('chip-true'), chipFlips: $('chip-flips'),
   chart: $('chart'), legendObs: $('legend-obs'),
-  insight: $('insight'), mathline: $('mathline'), noise: $('noise'),
-  next: $('next'), statRound: $('stat-round'), statScore: $('stat-score'), statAvg: $('stat-avg'),
+  insight: $('insight'), mathline: $('mathline'), noise: $('noise'), moreMath: $('more-math'),
+  next: $('next'), statRound: $('stat-round'), statScore: $('stat-score'),
+  statAvg: $('stat-avg'), statAvgChip: $('stat-avg-chip'),
   reset: $('reset'),
 };
 
@@ -125,27 +124,29 @@ function renderTally() {
 /* ---------------- guessing & scoring ---------------- */
 
 function syncGuess() {
-  els.guessOut.textContent = Number(els.guess.value).toFixed(2);
+  const v = Number(els.guess.value);
+  els.guessOut.textContent = v.toFixed(2);
+  els.guess.style.setProperty('--fill', (v * 100) + '%');
 }
 
 function verdictFor(err) {
-  if (err <= 0.02) return { name: 'Dead on', flavor: "You've got Shannon's eyes." };
-  if (err <= 0.05) return { name: 'Sharp', flavor: 'Your gut is well calibrated.' };
-  if (err <= 0.10) return { name: 'Good', flavor: 'A solid read of a slippery number.' };
-  if (err <= 0.20) return { name: 'Warm', flavor: 'Right neighborhood, wrong house.' };
-  return { name: 'Cold', flavor: 'Entropy is sneakier than it looks.' };
+  if (err <= 0.02) return 'Spot on!';
+  if (err <= 0.05) return 'Sharp!';
+  if (err <= 0.10) return 'Nice!';
+  if (err <= 0.20) return 'Warm';
+  return 'Cold';
 }
 
 function insightFor(p, H) {
   const maj = p >= 0.5 ? 'heads' : 'tails';
   const a = Math.round(Math.max(p, 1 - p) * 100);
   const b = 100 - a;
-  if (H === 0) return `This coin always lands ${maj}. Zero surprise, zero information — a flip tells you nothing you didn't already know.`;
-  if (H >= 0.985) return 'An (almost) perfectly fair coin. Every flip is worth a full bit — no two-sided coin is harder to predict.';
-  if (H >= 0.9) return `A ${a}/${b} coin still carries ${fmtBits(H)} bits. The curve is remarkably flat near the top — mild bias barely dents the surprise.`;
-  if (H >= 0.45) return `A ${a}/${b} coin. Betting ${maj} usually wins, yet each flip still carries real uncertainty — this is the middle ground between order and noise.`;
-  if (H >= 0.12) return `Heavily loaded toward ${maj}. Most flips just confirm what you already expected, so the average surprise is small.`;
-  return `Almost a one-sided coin — ${maj} nearly every time. Near-certainty means each flip carries almost no information.`;
+  if (H === 0) return `Always ${maj} — no surprise, no information.`;
+  if (H >= 0.985) return 'Essentially fair — every flip is worth a full bit.';
+  if (H >= 0.9) return `A ${a}/${b} coin still carries ${fmtBits(H)} bits — the curve is flat near the top.`;
+  if (H >= 0.45) return `A ${a}/${b} coin: predictable enough to bet on, surprising enough to matter.`;
+  if (H >= 0.12) return `Heavily loaded toward ${maj} — most flips just confirm expectations.`;
+  return `Nearly one-sided — near-certainty carries almost no information.`;
 }
 
 function lock() {
@@ -156,24 +157,19 @@ function lock() {
   const { p, H } = state.coin;
   const err = Math.abs(guess - H);
   const pts = Math.max(0, Math.round(100 - 500 * err));
-  const v = verdictFor(err);
 
   state.life.rounds += 1;
   state.life.sumErr += err;
   state.life.score += pts;
   saveLife();
 
-  els.verdict.textContent = `${v.name} — ${fmtBits(err)} bits off`;
-  els.flavor.textContent = v.flavor;
+  els.verdict.textContent = verdictFor(err);
+  els.verdictSub.textContent = `${fmtBits(err)} bits off · +${pts} points`;
 
   const n = state.heads + state.tails;
-  els.tileCoinV.textContent = fmtPct(p) + ' heads';
-  els.tileCoinS.textContent = fmtPct(1 - p) + ' tails';
-  els.tileHV.textContent = fmtBits(H, 3);
-  els.tileGuessV.textContent = fmtBits(guess) + ' bits';
-  els.tileGuessS.textContent = n === 1 ? '1 flip used' : `${n} flips used`;
-  els.tileRoundV.textContent = '+' + pts;
-  els.tileRoundS.textContent = v.name;
+  els.chipCoin.textContent = fmtPct(p) + ' heads';
+  els.chipTrue.textContent = fmtBits(H, 3) + ' bits';
+  els.chipFlips.textContent = n === 1 ? '1 flip used' : `${n} flips used`;
 
   els.insight.textContent = insightFor(p, H);
 
@@ -202,7 +198,6 @@ function lock() {
   els.legendObs.hidden = ph === null;
 
   setPlayEnabled(false);
-  els.guessPanel.hidden = true;
   els.revealPanel.hidden = false;
   els.revealPanel.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'nearest' });
   renderScorebar();
@@ -219,7 +214,7 @@ function nextRound() {
   syncGuess();
   renderTally();
   els.revealPanel.hidden = true;
-  els.guessPanel.hidden = false;
+  els.moreMath.open = false;
   setPlayEnabled(true);
   renderScorebar();
   document.getElementById('play-panel').scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'nearest' });
@@ -232,9 +227,8 @@ function setPlayEnabled(on) {
 function renderScorebar() {
   els.statRound.textContent = state.life.rounds + (state.locked ? 0 : 1);
   els.statScore.textContent = state.life.score;
-  els.statAvg.textContent = state.life.rounds
-    ? fmtBits(state.life.sumErr / state.life.rounds) + ' bits'
-    : '–';
+  els.statAvgChip.hidden = state.life.rounds === 0;
+  if (state.life.rounds) els.statAvg.textContent = fmtBits(state.life.sumErr / state.life.rounds);
 }
 
 /* ---------------- persistence ---------------- */
