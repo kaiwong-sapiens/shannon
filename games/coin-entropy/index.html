@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Guess the Entropy · shannon</title>
+  <meta name="description" content="Flip a mystery coin and guess how many bits of surprise each flip carries — an interactive introduction to Shannon entropy.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🪙</text></svg>">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+
+  <nav class="crumb"><a href="../../index.html">← shannon</a></nav>
+
+  <header class="masthead">
+    <h1>Guess the Entropy</h1>
+    <p class="tagline">
+      This coin was minted with a secret bias. Flip it as many times as you like,
+      get a feel for how predictable it is — then guess how many
+      <strong>bits of surprise</strong> a single flip carries.
+    </p>
+  </header>
+
+  <section class="scorebar" aria-label="Your progress">
+    <div class="stat"><span class="stat-label">Round</span><span class="stat-value" id="stat-round">1</span></div>
+    <div class="stat"><span class="stat-label">Score</span><span class="stat-value" id="stat-score">0</span></div>
+    <div class="stat"><span class="stat-label">Avg error</span><span class="stat-value" id="stat-avg">–</span></div>
+  </section>
+
+  <main>
+    <section class="panel play-panel" id="play-panel">
+      <div class="coin-zone">
+        <button class="coin" id="coin" aria-label="Flip the coin once">?</button>
+        <div class="flip-controls">
+          <button class="btn" id="flip-1" aria-label="Flip once">Flip</button>
+          <button class="btn" id="flip-10" aria-label="Flip ten times">×10</button>
+          <button class="btn" id="flip-100" aria-label="Flip one hundred times">×100</button>
+        </div>
+      </div>
+      <div class="observe-zone">
+        <div class="tally-legend" aria-live="polite">
+          <span class="key"><i class="swatch swatch-h"></i>Heads <b id="count-h">0</b></span>
+          <span class="key"><i class="swatch swatch-t"></i>Tails <b id="count-t">0</b></span>
+          <span class="key">Flips <b id="count-n">0</b></span>
+        </div>
+        <div class="tally-bar" role="img" aria-label="Share of heads and tails so far">
+          <div class="seg seg-h" id="seg-h"></div>
+          <div class="seg seg-t" id="seg-t"></div>
+        </div>
+        <div class="tally-pct"><span id="pct-h"></span><span id="pct-t"></span></div>
+        <div class="strip" id="strip" aria-hidden="true"></div>
+      </div>
+    </section>
+
+    <section class="panel guess-panel" id="guess-panel">
+      <h2>Your guess</h2>
+      <p class="hint">
+        How much surprise is in one flip of <em>this</em> coin?
+        1 bit means a perfect 50/50 toss — maximum uncertainty.
+        0 bits means the outcome is a foregone conclusion.
+      </p>
+      <div class="slider-row">
+        <div class="slider-col">
+          <input type="range" id="guess" min="0" max="1" step="0.01" value="0.5" aria-label="Your entropy guess in bits">
+          <div class="slider-ends"><span>0 · no surprise ever</span><span>1 · pure coin toss</span></div>
+        </div>
+        <output id="guess-out" for="guess">0.50</output><span class="unit">bits</span>
+      </div>
+      <button class="btn btn-primary" id="lock">Lock in my guess</button>
+      <p class="finescore">Scoring: start at 100 points, lose 5 for every 0.01 bits you're off.</p>
+    </section>
+
+    <section class="panel reveal-panel" id="reveal-panel" hidden>
+      <h2 id="verdict"></h2>
+      <p class="flavor" id="flavor"></p>
+
+      <div class="reveal-grid">
+        <div class="tile"><span class="t-label">The coin</span><span class="t-value" id="tile-coin-v"></span><span class="t-sub" id="tile-coin-s"></span></div>
+        <div class="tile"><span class="t-label">True entropy</span><span class="t-value" id="tile-h-v"></span><span class="t-sub">bits per flip</span></div>
+        <div class="tile"><span class="t-label">Your guess</span><span class="t-value" id="tile-guess-v"></span><span class="t-sub" id="tile-guess-s"></span></div>
+        <div class="tile"><span class="t-label">This round</span><span class="t-value" id="tile-round-v"></span><span class="t-sub" id="tile-round-s"></span></div>
+      </div>
+
+      <figure class="chart-figure">
+        <figcaption>Every two-sided coin lives somewhere on this curve. Hover it to explore.</figcaption>
+        <svg id="chart" viewBox="0 0 640 360" role="img"
+             aria-label="Binary entropy curve: bits of surprise against chance of heads, with the true coin, your observed flips, and your guess marked."></svg>
+        <div class="chart-legend">
+          <span><i class="ckey ckey-true"></i>the coin</span>
+          <span id="legend-obs"><i class="ckey ckey-obs"></i>what your flips showed</span>
+          <span><i class="ckey ckey-guess"></i>your guess</span>
+        </div>
+      </figure>
+
+      <p class="insight" id="insight"></p>
+      <p class="mathline" id="mathline"></p>
+      <p class="noise" id="noise"></p>
+
+      <button class="btn btn-primary" id="next">Next coin →</button>
+    </section>
+
+    <section class="learn">
+      <h2>The ideas underneath</h2>
+      <div class="cards">
+        <div class="card">
+          <h3>Entropy is average surprise</h3>
+          <p>An outcome with probability <em>q</em> carries log₂(1/<em>q</em>) bits of surprise —
+             a 1-in-4 event is 2 bits, a 1-in-a-million event is about 20.
+             Entropy weighs each outcome's surprise by how often it happens:
+             it is the surprise of an average flip.</p>
+        </div>
+        <div class="card">
+          <h3>Why the peak sits at 50/50</h3>
+          <p>Uncertainty is greatest when neither side is favored, so H tops out at
+             exactly 1 bit at 50/50 — and the curve is strikingly flat up there.
+             A 60/40 coin still carries 0.97 bits; bias has to get extreme before
+             predictability really kicks in.</p>
+        </div>
+        <div class="card">
+          <h3>Why anyone cares</h3>
+          <p>Shannon proved entropy is the limit of compression: flips of a 90/10 coin
+             can be stored in about 0.47 bits each on average, and no scheme can beat H.
+             That single theorem underlies ZIP files, JPEG, and every byte
+             that crosses the internet.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>Built from Claude Shannon's
+      <a href="https://people.math.harvard.edu/~ctm/home/text/others/shannon/entropy/entropy.pdf">A Mathematical Theory of Communication</a> (1948),
+      the paper that invented the bit.
+      · <a href="#" id="reset">Reset my progress</a></p>
+  </footer>
+
+</div>
+<script src="game.js"></script>
+</body>
+</html>

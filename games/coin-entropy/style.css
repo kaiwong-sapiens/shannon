@@ -1,0 +1,276 @@
+/* Guess the Entropy — part of `shannon` (explorables for information theory).
+   Colors follow the repo's validated palette; see README §design. */
+
+:root {
+  color-scheme: light dark;
+  /* chrome */
+  --page: #f9f9f7;
+  --surface: #fcfcfb;
+  --ink: #0b0b0b;
+  --ink-2: #52514e;
+  --muted: #898781;
+  --grid: #e1e0d9;
+  --axis: #c3c2b7;
+  --border: rgba(11, 11, 11, 0.10);
+  --shadow: 0 1px 2px rgba(11, 11, 11, 0.04), 0 4px 16px rgba(11, 11, 11, 0.05);
+  /* entities (validated pairs — see README §design) */
+  --heads: #eda100;
+  --heads-ink: #3c2a00;
+  --tails: #4a3aa7;
+  --curve: #2a78d6;
+  --true: #eb6834;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --page: #0d0d0d;
+    --surface: #1a1a19;
+    --ink: #ffffff;
+    --ink-2: #c3c2b7;
+    --grid: #2c2c2a;
+    --axis: #383835;
+    --border: rgba(255, 255, 255, 0.10);
+    --shadow: none;
+    --heads: #c98500;
+    --heads-ink: #1d1200;
+    --tails: #9085e9;
+    --curve: #3987e5;
+    --true: #d95926;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #0d0d0d;
+  --surface: #1a1a19;
+  --ink: #ffffff;
+  --ink-2: #c3c2b7;
+  --grid: #2c2c2a;
+  --axis: #383835;
+  --border: rgba(255, 255, 255, 0.10);
+  --shadow: none;
+  --heads: #c98500;
+  --heads-ink: #1d1200;
+  --tails: #9085e9;
+  --curve: #3987e5;
+  --true: #d95926;
+}
+
+* { box-sizing: border-box; }
+
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  padding: 20px 16px 64px;
+  background: var(--page);
+  color: var(--ink);
+  font: 16px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+.wrap { max-width: 780px; margin: 0 auto; }
+
+a { color: inherit; }
+
+/* ---------- masthead ---------- */
+
+.crumb { font-size: 13px; margin-bottom: 18px; }
+.crumb a { color: var(--muted); text-decoration: none; }
+.crumb a:hover { color: var(--ink-2); text-decoration: underline; }
+
+.masthead h1 {
+  font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  font-size: clamp(30px, 6vw, 42px);
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  margin: 0 0 10px;
+}
+
+.tagline {
+  color: var(--ink-2);
+  font-size: 16.5px;
+  max-width: 62ch;
+  margin: 0 0 22px;
+}
+
+/* ---------- score bar ---------- */
+
+.scorebar { display: flex; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; }
+
+.stat {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  padding: 8px 16px 10px;
+  min-width: 92px;
+}
+.stat-label { display: block; font-size: 12px; color: var(--muted); }
+.stat-value { display: block; font-size: 20px; font-weight: 600; }
+
+/* ---------- panels ---------- */
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  padding: 24px 26px;
+  margin-bottom: 16px;
+}
+.panel h2 { font-size: 20px; margin: 0 0 8px; }
+
+/* ---------- play panel ---------- */
+
+.play-panel { display: grid; grid-template-columns: 168px 1fr; gap: 26px; align-items: start; }
+
+.coin-zone { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+
+.coin {
+  width: 108px;
+  height: 108px;
+  border-radius: 50%;
+  border: none;
+  background: var(--heads);
+  color: var(--heads-ink);
+  font: 700 44px/1 system-ui, -apple-system, "Segoe UI", sans-serif;
+  cursor: pointer;
+  box-shadow: inset 0 -7px 0 rgba(0, 0, 0, 0.18), inset 0 3px 0 rgba(255, 255, 255, 0.35);
+}
+.coin:active:not(:disabled) { transform: scale(0.96); }
+.coin.spin { animation: spin 0.5s ease; }
+.coin.bulk { animation: pulse 0.3s ease; }
+@keyframes spin { from { transform: rotateY(0); } to { transform: rotateY(720deg); } }
+@keyframes pulse { 50% { transform: scale(1.08); } }
+
+.flip-controls { display: flex; gap: 6px; }
+
+/* ---------- buttons ---------- */
+
+.btn {
+  font: 600 14px/1 system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--axis);
+  border-radius: 10px;
+  padding: 9px 14px;
+  cursor: pointer;
+}
+.btn:hover:not(:disabled) { border-color: var(--muted); }
+.btn-primary { background: var(--ink); color: var(--page); border-color: var(--ink); padding: 11px 18px; }
+.btn-primary:hover:not(:disabled) { opacity: 0.88; }
+button:disabled { opacity: 0.45; cursor: default; }
+:is(button, input, a):focus-visible { outline: 2px solid var(--curve); outline-offset: 2px; }
+
+/* ---------- tally ---------- */
+
+.observe-zone { min-width: 0; }
+
+.tally-legend { display: flex; gap: 18px; flex-wrap: wrap; font-size: 14px; color: var(--ink-2); margin-bottom: 10px; }
+.tally-legend b { color: var(--ink); font-weight: 600; }
+.key { display: inline-flex; align-items: center; gap: 6px; }
+.swatch { width: 11px; height: 11px; border-radius: 3px; display: inline-block; }
+.swatch-h { background: var(--heads); }
+.swatch-t { background: var(--tails); }
+
+.tally-bar {
+  display: flex;
+  gap: 2px; /* surface gap between segments */
+  height: 18px;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid var(--grid);
+}
+.seg { flex-grow: 0; flex-basis: 0; transition: flex-grow 0.25s ease; min-width: 0; }
+.seg-h { background: var(--heads); }
+.seg-t { background: var(--tails); }
+
+.tally-pct { display: flex; justify-content: space-between; font-size: 12.5px; color: var(--ink-2); margin-top: 5px; min-height: 1.2em; }
+
+.strip { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 14px; }
+.chip { width: 11px; height: 11px; border-radius: 3px; }
+.chip-h { background: var(--heads); }
+.chip-t { background: var(--tails); }
+
+/* ---------- guess panel ---------- */
+
+.hint { color: var(--ink-2); font-size: 14.5px; margin: 0 0 16px; max-width: 62ch; }
+
+.slider-row { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+.slider-col { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.slider-col input[type="range"] { width: 100%; accent-color: var(--ink); height: 28px; margin: 0; }
+.slider-row output { font-size: 26px; font-weight: 600; min-width: 2.6ch; text-align: right; }
+.unit { color: var(--muted); font-size: 14px; }
+
+.slider-ends { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); }
+
+.finescore { font-size: 12.5px; color: var(--muted); margin: 10px 0 0; }
+
+/* ---------- reveal panel ---------- */
+
+.reveal-panel h2 { font-size: 24px; }
+.flavor { color: var(--ink-2); margin: -2px 0 16px; font-size: 14.5px; }
+
+.reveal-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
+.tile { background: var(--page); border: 1px solid var(--border); border-radius: 12px; padding: 10px 14px 12px; }
+.t-label { display: block; font-size: 12px; color: var(--muted); }
+.t-value { display: block; font-size: 20px; font-weight: 600; margin: 2px 0; }
+.t-sub { display: block; font-size: 12px; color: var(--ink-2); }
+
+.chart-figure { margin: 0 0 4px; }
+.chart-figure figcaption { font-size: 13px; color: var(--muted); margin-bottom: 8px; }
+#chart { width: 100%; height: auto; display: block; }
+
+#chart .gridline { stroke: var(--grid); stroke-width: 1; }
+#chart .axisline { stroke: var(--axis); stroke-width: 1; }
+#chart text { font-family: inherit; }
+#chart .tick { fill: var(--muted); font-size: 11px; }
+#chart .caption { fill: var(--muted); font-size: 11.5px; }
+#chart .curve { fill: none; stroke: var(--curve); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+#chart .truedot { fill: var(--true); stroke: var(--surface); stroke-width: 2; }
+#chart .obsdot { fill: var(--muted); stroke: var(--surface); stroke-width: 2; }
+#chart .guessline { stroke: var(--ink); stroke-width: 2; stroke-dasharray: 6 5; }
+#chart .truelabel { fill: var(--ink); font-size: 12px; font-weight: 600; }
+#chart .guesslabel { fill: var(--ink-2); font-size: 11px; }
+#chart .hoverdot { fill: var(--surface); stroke: var(--curve); stroke-width: 2; }
+#chart .hovertext { fill: var(--ink-2); font-size: 12px; }
+#chart .hitarea { fill: transparent; cursor: crosshair; }
+
+.chart-legend { display: flex; gap: 18px; flex-wrap: wrap; font-size: 13px; color: var(--ink-2); margin: 6px 0 18px; }
+.chart-legend span { display: inline-flex; align-items: center; gap: 7px; }
+.ckey { flex: none; }
+.ckey-true { width: 10px; height: 10px; border-radius: 50%; background: var(--true); }
+.ckey-obs { width: 9px; height: 9px; border-radius: 50%; background: var(--muted); }
+.ckey-guess { width: 16px; height: 0; border-top: 2px dashed var(--ink); }
+
+.insight { font-size: 15px; margin: 0 0 10px; max-width: 62ch; }
+.mathline { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 13px; color: var(--ink-2); margin: 0 0 10px; overflow-x: auto; }
+.noise { font-size: 13.5px; color: var(--ink-2); margin: 0 0 18px; max-width: 62ch; }
+
+/* ---------- learn section ---------- */
+
+.learn { margin-top: 34px; }
+.learn > h2 { font-size: 20px; margin-bottom: 14px; }
+.cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow); padding: 16px 18px; }
+.card h3 { font-size: 15px; margin: 0 0 6px; }
+.card p { font-size: 13.5px; color: var(--ink-2); margin: 0; }
+
+/* ---------- footer ---------- */
+
+footer { margin-top: 40px; font-size: 13px; color: var(--muted); }
+footer a { color: var(--ink-2); }
+
+/* ---------- responsive & motion ---------- */
+
+@media (max-width: 640px) {
+  .play-panel { grid-template-columns: 1fr; }
+  .coin-zone { flex-direction: row; justify-content: center; }
+  .reveal-grid { grid-template-columns: repeat(2, 1fr); }
+  .cards { grid-template-columns: 1fr; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .coin.spin, .coin.bulk { animation: none; }
+  .seg { transition: none; }
+}

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>shannon · Claude Shannon's ideas, made playable</title>
+  <meta name="description" content="Small interactive games that make Claude Shannon's information theory something you can feel — entropy, bits, coding, noise.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>∑</text></svg>">
+  <style>
+    :root {
+      color-scheme: light dark;
+      --page: #f9f9f7; --surface: #fcfcfb;
+      --ink: #0b0b0b; --ink-2: #52514e; --muted: #898781;
+      --border: rgba(11, 11, 11, 0.10); --axis: #c3c2b7;
+      --accent: #eda100;
+      --shadow: 0 1px 2px rgba(11, 11, 11, 0.04), 0 4px 16px rgba(11, 11, 11, 0.05);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        color-scheme: dark;
+        --page: #0d0d0d; --surface: #1a1a19;
+        --ink: #ffffff; --ink-2: #c3c2b7;
+        --border: rgba(255, 255, 255, 0.10); --axis: #383835;
+        --accent: #c98500;
+        --shadow: none;
+      }
+    }
+    :root[data-theme="dark"] {
+      color-scheme: dark;
+      --page: #0d0d0d; --surface: #1a1a19;
+      --ink: #ffffff; --ink-2: #c3c2b7;
+      --border: rgba(255, 255, 255, 0.10); --axis: #383835;
+      --accent: #c98500;
+      --shadow: none;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 48px 16px 64px;
+      background: var(--page); color: var(--ink);
+      font: 16px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+    .wrap { max-width: 720px; margin: 0 auto; }
+    h1 {
+      font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+      font-size: clamp(44px, 9vw, 64px); line-height: 1; letter-spacing: -0.02em;
+      margin: 0 0 6px;
+    }
+    .formula {
+      font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+      font-style: italic; font-size: 22px; color: var(--muted); margin: 0 0 26px;
+    }
+    .intro { color: var(--ink-2); max-width: 62ch; margin: 0 0 36px; }
+    .intro b { color: var(--ink); }
+    h2 { font-size: 14px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 0 0 14px; }
+    .cards { display: grid; gap: 14px; margin-bottom: 40px; }
+    .card {
+      display: block; text-decoration: none; color: inherit;
+      background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+      box-shadow: var(--shadow); padding: 20px 24px;
+    }
+    a.card { transition: transform 0.12s ease, border-color 0.12s ease; }
+    a.card:hover { transform: translateY(-2px); border-color: var(--axis); }
+    a.card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .card h3 { margin: 0 0 6px; font-size: 19px; }
+    .card p { margin: 0; color: var(--ink-2); font-size: 14.5px; max-width: 58ch; }
+    .card .go { display: inline-block; margin-top: 12px; font-weight: 600; font-size: 14px; color: var(--ink); }
+    .card .go::after { content: " →"; }
+    .card.soon { opacity: 0.62; }
+    .card.soon .badge {
+      display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: 0.05em;
+      text-transform: uppercase; color: var(--muted); border: 1px solid var(--axis);
+      border-radius: 999px; padding: 2px 9px; margin-top: 12px;
+    }
+    .emoji { font-size: 22px; margin-right: 6px; }
+    footer { font-size: 13px; color: var(--muted); max-width: 62ch; }
+    footer a { color: var(--ink-2); }
+    @media (prefers-reduced-motion: reduce) { a.card { transition: none; } }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>shannon</h1>
+    <p class="formula">H = −Σ pᵢ log₂ pᵢ</p>
+    <p class="intro">
+      In one 1948 paper, <b>Claude Shannon</b> (1916–2001) worked out how to measure
+      information itself. <i>A Mathematical Theory of Communication</i> gave us the bit,
+      entropy, and channel capacity — the mathematical bedrock under every file ever
+      compressed and every message ever sent. These small games exist to make those
+      ideas something you can <b>feel</b>, not just read.
+    </p>
+  </header>
+
+  <main>
+    <h2>Explorables</h2>
+    <div class="cards">
+      <a class="card" href="games/coin-entropy/index.html">
+        <h3><span class="emoji">🪙</span>Guess the Entropy</h3>
+        <p>A coin is minted with a secret bias. Flip it, feel how predictable it is,
+           then put a number — in bits — on your hunch. The gentlest possible
+           introduction to entropy.</p>
+        <span class="go">Play</span>
+      </a>
+      <div class="card soon">
+        <h3><span class="emoji">🔤</span>The Redundancy of English</h3>
+        <p>Guess a sentence one letter at a time, the way Shannon measured English
+           down to about one bit per letter in 1951.</p>
+        <span class="badge">In the works</span>
+      </div>
+      <div class="card soon">
+        <h3><span class="emoji">📡</span>The Noisy Channel</h3>
+        <p>Push a message through static and discover why adding the <em>right</em>
+           redundancy beats shouting.</p>
+        <span class="badge">In the works</span>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <p>Start at the source: Shannon's
+      <a href="https://people.math.harvard.edu/~ctm/home/text/others/shannon/entropy/entropy.pdf">A Mathematical Theory of Communication</a> (1948).
+      Plain HTML — no build, no tracking. Works offline.</p>
+  </footer>
+</div>
+<script>
+  if (new URLSearchParams(location.search).has('dark')) document.documentElement.dataset.theme = 'dark';
+</script>
+</body>
+</html>
