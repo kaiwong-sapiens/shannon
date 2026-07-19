@@ -35,6 +35,7 @@ const state = {
   options: [],           // three candidate entropies; one is the coin's
   heads: 0,
   tails: 0,
+  tries: 0,              // wrong picks this round
   locked: false,
 };
 
@@ -90,7 +91,7 @@ const els = {
   chipCoin: $('chip-coin'), chipTrue: $('chip-true'), chipFlips: $('chip-flips'),
   chart: $('chart'), legendObs: $('legend-obs'),
   insight: $('insight'), mathline: $('mathline'), noise: $('noise'), moreMath: $('more-math'),
-  next: $('next'),
+  next: $('next'), tryNote: $('try-note'),
 };
 
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -156,16 +157,16 @@ function sfxStamp() {
   tone(150, 0.15, { gain: 0.2 });
 }
 
-function sfxVerdict(correct) {
-  if (correct) {
-    // rising major sparkle
-    [523.25, 659.25, 783.99, 1046.5].forEach((f, i) =>
-      tone(f, 0.28, { type: 'triangle', gain: 0.1, at: 0.35 + i * 0.09 }));
-  } else {
-    // a gentle womp-womp: falling tritone, second note bending down
-    tone(311.13, 0.16, { type: 'triangle', gain: 0.12, at: 0.35 });
-    tone(233.08, 0.4, { type: 'triangle', gain: 0.14, at: 0.53, glide: 196 });
-  }
+function sfxCorrect() {
+  // rising major sparkle
+  [523.25, 659.25, 783.99, 1046.5].forEach((f, i) =>
+    tone(f, 0.28, { type: 'triangle', gain: 0.1, at: 0.35 + i * 0.09 }));
+}
+
+function sfxWrong() {
+  // a gentle womp-womp: falling tritone, second note bending down
+  tone(311.13, 0.16, { type: 'triangle', gain: 0.12, at: 0.02 });
+  tone(233.08, 0.4, { type: 'triangle', gain: 0.14, at: 0.2, glide: 196 });
 }
 
 /* ---------------- coin faces ---------------- */
@@ -352,11 +353,17 @@ function trueOption() {
 
 function answer(guess, btn) {
   if (state.locked) return;
-  lock(guess);
-  btn.classList.add('chosen');
-  const trueV = trueOption();
-  for (const el of els.answers.children) {
-    if (Number(el.textContent) === trueV) el.classList.add('is-true');
+  audio();                                 // prime inside the click gesture
+  if (guess === trueOption()) {
+    btn.classList.add('chosen', 'is-true');
+    els.tryNote.hidden = true;
+    lock();
+  } else {
+    state.tries += 1;
+    btn.disabled = true;
+    btn.classList.add('wrong');
+    els.tryNote.hidden = false;
+    sfxWrong();
   }
 }
 
@@ -372,18 +379,16 @@ function insightFor(p, H) {
   return `Nearly one-sided — near-certainty carries almost no information.`;
 }
 
-function lock(guess) {
+function lock() {
   if (state.locked) return;
   state.locked = true;
   abortSpin();
 
   const { p, H } = state.coin;
-  const err = Math.abs(guess - H);
-  const correct = guess === trueOption();
 
-  els.verdict.textContent = correct ? 'Correct!' : 'Not quite';
-  els.verdictSub.textContent = correct ? '' : `${fmtBits(err)} bits off`;
-  els.verdictSub.hidden = correct;
+  els.verdict.textContent = 'Correct!';
+  els.verdictSub.textContent = state.tries === 0 ? 'First try!' : '';
+  els.verdictSub.hidden = state.tries !== 0;
 
   const n = state.heads + state.tails;
   els.chipCoin.textContent = fmtPct(p) + ' heads';
@@ -405,19 +410,16 @@ function lock(guess) {
     const slope = Math.abs(Math.log2((1 - ph) / ph));
     let delta = Math.max(slope * Math.sqrt(ph * (1 - ph) / n), 0.72 / n);
     delta = Math.min(Math.max(delta, 0.005), 0.5);
-    let txt = `Sampling luck: with ${n} flips, an estimate of H typically wobbles by about ±${fmtBits(delta)} bits.`;
-    if (err <= delta) txt += ' Your miss is inside that band — you read the data about as well as it could be read.';
-    els.noise.textContent = txt;
+    els.noise.textContent = `Sampling luck: with ${n} flips, an estimate of H typically wobbles by about ±${fmtBits(delta)} bits.`;
     els.noise.hidden = false;
   } else {
     els.noise.hidden = true;
   }
 
-  drawChart(p, H, ph, guess);
+  drawChart(p, H, ph);
   els.legendObs.hidden = ph === null;
 
   // the coin turns over and shows its true worth, stamped into the metal
-  audio();                                 // prime the context inside the click gesture
   if (reducedMotion) {
     setCoinFace('V', fmtBits(H, 3));
     sfxStamp();
@@ -426,7 +428,7 @@ function lock(guess) {
     els.coin.classList.add('spin');
     stampTimer = setTimeout(() => { setCoinFace('V', fmtBits(H, 3)); sfxStamp(); }, 250);
   }
-  sfxVerdict(correct);
+  sfxCorrect();
   setRestlessness();
 
   setPlayEnabled(false);
@@ -442,7 +444,9 @@ function nextRound() {
   state.options = makeOptions(state.coin.H);
   state.heads = 0;
   state.tails = 0;
+  state.tries = 0;
   state.locked = false;
+  els.tryNote.hidden = true;
   els.strip.innerHTML = '';
   spin.base = '?';
   setCoinFace('?');
@@ -469,7 +473,7 @@ function svgEl(tag, attrs) {
   return el;
 }
 
-function drawChart(p, H, ph, guess) {
+function drawChart(p, H, ph) {
   const svg = els.chart;
   svg.innerHTML = '';
 
@@ -504,15 +508,6 @@ function drawChart(p, H, ph, guess) {
   for (let pp = 0.002; pp < 1; pp += 0.002) d += ` L ${x(pp).toFixed(2)} ${y(entropyBits(pp)).toFixed(2)}`;
   d += ` L ${x(1)} ${y(0)}`;
   svg.appendChild(svgEl('path', { class: 'curve', d }));
-
-  // your guess — a dashed reference line
-  svg.appendChild(svgEl('line', { class: 'guessline', x1: M.l, y1: y(guess), x2: M.l + W, y2: y(guess) }));
-  const gLabel = svgEl('text', {
-    class: 'guesslabel', x: M.l + 6,
-    y: y(guess) + (y(guess) < M.t + 18 ? 15 : -7),
-  });
-  gLabel.textContent = `your pick · ${fmtBits(guess)}`;
-  svg.appendChild(gLabel);
 
   // what the flips showed (plug-in estimate), drawn under the true dot
   if (ph !== null) {
@@ -617,9 +612,12 @@ if (qs.has('demo') || qs.has('demoplay')) {
   renderAnswers();
   flip(60);
   if (qs.has('demo')) {
-    const pick = state.options.reduce((a, b) => (Math.abs(b - 0.79) < Math.abs(a - 0.79) ? b : a));
-    const btn = [...els.answers.children].find((el) => Number(el.textContent) === pick);
-    answer(pick, btn);
+    // one wrong pick, then the right one — shows the try-again state and the reveal
+    const tv = trueOption();
+    const near = state.options.reduce((a, b) => (Math.abs(b - 0.79) < Math.abs(a - 0.79) ? b : a));
+    const byValue = (v) => [...els.answers.children].find((el) => Number(el.textContent) === v);
+    if (near !== tv) answer(near, byValue(near));
+    answer(tv, byValue(tv));
     // settle the coin instantly and unfold details so screenshots show everything
     clearTimeout(stampTimer);
     els.coin.classList.remove('spin');
