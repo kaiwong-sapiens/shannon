@@ -88,7 +88,7 @@ function flip(n) {
     const isHeads = rand() < state.coin.p;
     if (isHeads) state.heads++; else state.tails++;
     last = isHeads;
-    const chip = document.createElement('i');
+    const chip = document.createElement('span');
     chip.className = 'chip ' + (isHeads ? 'chip-h' : 'chip-t');
     els.strip.appendChild(chip);
   }
@@ -326,20 +326,21 @@ function drawChart(p, H, ph, guess) {
   tLabel.textContent = `${fmtBits(H)} bits`;
   svg.appendChild(tLabel);
 
-  // hover layer: slide along the curve to read off any coin
+  // hover/keyboard layer: slide along the curve to read off any coin
   const hoverDot = svgEl('circle', { class: 'hoverdot', r: 4.5, visibility: 'hidden' });
   const hoverText = svgEl('text', {
     class: 'hovertext', x: M.l + W, y: M.t - 14, 'text-anchor': 'end', visibility: 'hidden',
   });
-  const hit = svgEl('rect', { class: 'hitarea', x: M.l, y: M.t - 6, width: W, height: PH + 12 });
+  const hit = svgEl('rect', {
+    class: 'hitarea', x: M.l, y: M.t - 6, width: W, height: PH + 12,
+    tabindex: '0',
+    'aria-label': 'Explore the curve: press the left and right arrow keys to read off other coins',
+  });
   svg.appendChild(hoverDot);
   svg.appendChild(hoverText);
   svg.appendChild(hit);
 
-  hit.addEventListener('pointermove', (ev) => {
-    const box = svg.getBoundingClientRect();
-    const px = ((ev.clientX - box.left) * (640 / box.width) - M.l) / W;
-    const pp = Math.min(0.998, Math.max(0.002, px));
+  const showAt = (pp) => {
     const hh = entropyBits(pp);
     hoverDot.setAttribute('cx', x(pp));
     hoverDot.setAttribute('cy', y(hh));
@@ -347,11 +348,29 @@ function drawChart(p, H, ph, guess) {
     hoverText.textContent = `a ${a}/${100 - a} coin → ${fmtBits(hh)} bits`;
     hoverDot.setAttribute('visibility', 'visible');
     hoverText.setAttribute('visibility', 'visible');
-  });
-  hit.addEventListener('pointerleave', () => {
+  };
+  const hideReadout = () => {
     hoverDot.setAttribute('visibility', 'hidden');
     hoverText.setAttribute('visibility', 'hidden');
+  };
+
+  hit.addEventListener('pointermove', (ev) => {
+    const box = svg.getBoundingClientRect();
+    const px = ((ev.clientX - box.left) * (640 / box.width) - M.l) / W;
+    showAt(Math.min(0.998, Math.max(0.002, px)));
   });
+  hit.addEventListener('pointerleave', hideReadout);
+
+  let kbP = 0.5;
+  hit.addEventListener('keydown', (ev) => {
+    if (ev.key !== 'ArrowLeft' && ev.key !== 'ArrowRight') return;
+    ev.preventDefault();
+    const step = ev.shiftKey ? 0.05 : 0.01;
+    kbP = Math.min(0.99, Math.max(0.01, kbP + (ev.key === 'ArrowRight' ? step : -step)));
+    showAt(kbP);
+  });
+  hit.addEventListener('focus', () => showAt(kbP));
+  hit.addEventListener('blur', hideReadout);
 }
 
 /* ---------------- wiring ---------------- */

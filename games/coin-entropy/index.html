@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Guess the Entropy · shannon</title>
   <meta name="description" content="Flip a mystery coin and guess how many bits of surprise each flip carries — an interactive introduction to Shannon entropy.">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🪙</text></svg>">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20100%20100%22%3E%3Ctext%20y=%22.9em%22%20font-size=%2290%22%3E%F0%9F%AA%99%3C/text%3E%3C/svg%3E">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -39,9 +39,9 @@
         </div>
       </div>
       <div class="observe-zone">
-        <div class="tally-legend" aria-live="polite">
-          <span class="key"><i class="swatch swatch-h"></i>Heads <b id="count-h">0</b></span>
-          <span class="key"><i class="swatch swatch-t"></i>Tails <b id="count-t">0</b></span>
+        <div class="tally-legend" aria-live="polite" aria-atomic="true">
+          <span class="key"><span class="swatch swatch-h"></span>Heads <b id="count-h">0</b></span>
+          <span class="key"><span class="swatch swatch-t"></span>Tails <b id="count-t">0</b></span>
           <span class="key">Flips <b id="count-n">0</b></span>
         </div>
         <div class="tally-bar" role="img" aria-label="Share of heads and tails so far">
@@ -87,9 +87,9 @@
         <svg id="chart" viewBox="0 0 640 360" role="img"
              aria-label="Binary entropy curve: bits of surprise against chance of heads, with the true coin, your observed flips, and your guess marked."></svg>
         <div class="chart-legend">
-          <span><i class="ckey ckey-true"></i>the coin</span>
-          <span id="legend-obs"><i class="ckey ckey-obs"></i>what your flips showed</span>
-          <span><i class="ckey ckey-guess"></i>your guess</span>
+          <span><span class="ckey ckey-true"></span>the coin</span>
+          <span id="legend-obs"><span class="ckey ckey-obs"></span>what your flips showed</span>
+          <span><span class="ckey ckey-guess"></span>your guess</span>
         </div>
       </figure>
 
