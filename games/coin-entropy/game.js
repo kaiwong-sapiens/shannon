@@ -617,7 +617,7 @@ els.next.addEventListener('click', nextRound);
 
 /* ---------------- init ---------------- */
 
-console.log('coin-entropy build v9');
+console.log('coin-entropy build v10');
 state.coin = newCoin();
 state.options = makeOptions(state.coin.H);
 renderAnswers();

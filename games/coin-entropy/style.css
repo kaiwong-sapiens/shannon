@@ -105,7 +105,7 @@ a { color: inherit; }
 
 /* ---------- play card ---------- */
 
-.coin-zone { display: flex; flex-direction: column; align-items: center; gap: 16px; margin-bottom: 20px; }
+.coin-zone { position: relative; display: flex; flex-direction: column; align-items: center; gap: 16px; margin-bottom: 20px; }
 
 /* Restlessness: the coin fidgets in proportion to the entropy its flips imply
    (--wob is H(observed p̂), 0..1 — derived only from what the player can see). */
@@ -117,31 +117,34 @@ a { color: inherit; }
 }
 
 .coin {
-  width: 132px;
-  height: 132px;
+  width: 264px;
+  height: 264px;
+  max-width: 100%;
   border-radius: 50%;
   border: none;
   display: inline-flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 3px;
+  gap: 6px;
   background: var(--heads);
   color: var(--heads-ink);
-  font: 800 54px/1 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font: 800 100px/1 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   cursor: pointer;
-  box-shadow: inset 0 -8px 0 rgba(0, 0, 0, 0.18), inset 0 4px 0 rgba(255, 255, 255, 0.35);
+  box-shadow: inset 0 -14px 0 rgba(0, 0, 0, 0.18), inset 0 7px 0 rgba(255, 255, 255, 0.35);
   user-select: none;
   -webkit-user-select: none;
   -webkit-tap-highlight-color: transparent;
   -webkit-touch-callout: none;
   touch-action: none; /* the press-and-hold gesture owns touches that start here */
 }
+/* the whole band beside the coin presses the coin — a full-width hit zone */
+.coin::before { content: ''; position: absolute; inset: 0; }
 .coin * { user-select: none; -webkit-user-select: none; pointer-events: none; }
 .coin.face-t { background: var(--tails); color: var(--tails-ink); }
-.coin-icon { width: 52px; height: 52px; fill: currentColor; }
-.coin-cap { font-size: 12.5px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; }
-.coin-value { font-size: 31px; font-weight: 800; letter-spacing: -0.01em; }
+.coin-icon { width: 104px; height: 104px; fill: currentColor; }
+.coin-cap { font-size: 21px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; }
+.coin-value { font-size: 56px; font-weight: 800; letter-spacing: -0.01em; }
 .coin:hover:not(:disabled) { transform: scale(1.04); filter: brightness(1.06); }
 .coin:active:not(:disabled) { transform: scale(0.96); filter: none; }
 .coin.spin { animation: spin 0.5s ease; }
