@@ -51,13 +51,13 @@ function newCoin() {
   return { p, H: entropyBits(p) };
 }
 
-// Four answers: the truth plus three distractors at graded distances,
+// Three answers: the truth plus two distractors — one close, one far —
 // all ≥ 0.05 bits apart so exactly one option is defensibly right.
 function makeOptions(H) {
   const sep = 0.05;
   const r2 = (x) => Math.round(Math.min(1, Math.max(0, x)) * 100) / 100;
   const vals = [r2(H)];
-  const bands = [[0.06, 0.11], [0.13, 0.2], [0.24, 0.4]];
+  const bands = [[0.06, 0.12], [0.16, 0.32]];
   for (const [lo, hi] of bands) {
     const off = lo + rand() * (hi - lo);
     const sign = rand() < 0.5 ? -1 : 1;
