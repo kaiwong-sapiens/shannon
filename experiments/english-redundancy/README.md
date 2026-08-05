@@ -48,6 +48,41 @@ The held-out column bottoms out at N=7 and ticks up at N=8: order-8 contexts
 are too sparse even in 9.4M characters for the model to keep gaining — the
 same wall Shannon hit, at a larger corpus scale.
 
+## The N→∞ limit
+
+Shannon defines H = lim F_N, but finite data only identifies an **upper
+bound**: our best is the held-out minimum, **H ≤ 1.840 bits/letter**
+(redundancy ≥ 61.3%). The script also extrapolates the held-out curve to
+N→∞ and prints the fits mostly to demonstrate that they are unidentifiable:
+geometric-tail fits give H∞ anywhere from 0.36 to 1.84 depending on the
+window (later windows are sparsity-contaminated; earlier ones wrongly assume
+the decay stays geometric), and a Hilberg power-law fit (β = 0.5) gives
+H∞ ≈ 0 — reproducing Hilberg's controversial 1990 re-analysis of Shannon's
+own data. Estimators with longer reach converge downward: Shannon's 1951
+human predictors gave 0.6–1.3 bits at 100-letter range, Cover & King (1978)
+~1.3, modern neural models ~0.7–1.0. Every predictor yields only an upper
+bound; "the entropy of English" is the infimum over all of them.
+
+## Why plug-in F_N is memorization at large N
+
+A context seen once in the corpus has a point-mass empirical next-letter
+distribution — **0 bits by construction**, which is knowledge of the corpus,
+not of English (the 7-letter context from "call me ishmael" is "certain"
+only because Moby Dick is in the training set). Measured on our corpus:
+
+```
+N=3:  2.4% of contexts are singletons;  0.0% of positions empirically deterministic
+N=5: 20.6% of contexts are singletons;  3.5% of positions empirically deterministic
+N=8: 48.3% of contexts are singletons; 27.8% of positions empirically deterministic
+```
+
+By N=8 more than a quarter of all positions contribute zero entropy purely
+by construction — most of the gap between plug-in (1.29) and held-out (1.88).
+Plug-in is the training loss, held-out is the test loss, N is model capacity:
+the table is a classic overfitting plot, and the plug-in column's descent
+past N≈5 measures corpus size, not language. In the limit N = corpus length,
+plug-in F_N = 0 exactly: "the text is perfectly predictable given the text."
+
 ## Run it
 
 ```sh

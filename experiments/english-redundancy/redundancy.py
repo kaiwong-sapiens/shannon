@@ -146,14 +146,44 @@ def main() -> None:
     h_grams = [entropy(model.grams[n]) for n in range(N_MAX)]  # H of (n+1)-grams
     held_sample = held[:200_000]  # cross-entropy is O(len * N); this is plenty
 
+    held_curve = []
     for n in range(0, N_MAX + 1):
         if n == 0:
             fn, hn = F0, F0
         else:
             fn = h_grams[n - 1] - (h_grams[n - 2] if n >= 2 else 0)
             hn = model.cross_entropy(held_sample, n - 1)
+        held_curve.append(hn)
         ref = f"  ({shannon_ref[n]})" if n in shannon_ref else ""
         print(f"{n:>2} {fn:>12.3f} {1 - fn / F0:>6.1%}   {hn:>13.3f} {1 - hn / F0:>6.1%}{ref}")
+
+    # --- the N->inf limit: only an upper bound is identifiable ------------------
+    # The held-out minimum bounds H from above; extrapolating the curve's tail is
+    # radically assumption-dependent (see README), which is the honest finding.
+    print(f"\nHeld-out minimum: H <= {min(held_curve):.3f} bits/letter "
+          f"(redundancy >= {1 - min(held_curve) / F0:.1%})")
+    print("Asymptote extrapolations (unstable by construction):")
+    hs = held_curve
+    for i in range(1, N_MAX - 1):
+        d1, d2 = hs[i] - hs[i + 1], hs[i + 1] - hs[i + 2]
+        if d1 > 0 and 0 < d2 < d1:
+            r = d2 / d1
+            print(f"  geometric tail, fit on N={i}..{i + 2}: H_inf = {hs[i + 2] - d2 * r / (1 - r):.3f}")
+    for a, b in [(2, 5), (3, 6)]:
+        c = (hs[a] - hs[b]) / (a**-0.5 - b**-0.5)
+        print(f"  Hilberg power law (beta=0.5), fit on N={a},{b}: H_inf = {hs[a] - c * a**-0.5:.3f}")
+
+    # --- why plug-in F_N is memorization at large N -----------------------------
+    # A context seen once has a point-mass empirical next-letter distribution:
+    # 0 bits by construction — knowledge of the corpus, not of English.
+    print("\nMemorization diagnostics for the plug-in column:")
+    for n in (3, 5, 8):
+        ctxs, pairs = model.grams[n - 2], model.grams[n - 1]
+        singles = sum(1 for v in ctxs.values() if v == 1)
+        det = sum(cnt for pk, cnt in pairs.items() if ctxs[pk // A] == cnt)
+        tot = sum(ctxs.values())
+        print(f"  N={n}: {singles / len(ctxs):.1%} of ({n - 1})-letter contexts are singletons; "
+              f"{det / tot:.1%} of positions are empirically deterministic (contribute 0 bits)")
 
     packed = bytes(train)
     comp = lzma.compress(packed, preset=9 | lzma.PRESET_EXTREME)
