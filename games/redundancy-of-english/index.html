@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>The Redundancy of English · shannon</title>
+  <meta name="description" content="Guess a hidden sentence one letter at a time — and measure the entropy of English yourself, the way Shannon did in 1951.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20100%20100%22%3E%3Ctext%20y=%22.9em%22%20font-size=%2290%22%3E%F0%9F%94%A4%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css?v=1">
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <nav class="crumb"><a href="../../">← shannon</a></nav>
+  </div>
+
+  <header class="masthead">
+    <h1>The Redundancy of English</h1>
+    <p class="tagline">In 1951 Shannon measured English by having someone guess a text
+      <strong>letter by letter</strong>. Now you're the subject.</p>
+  </header>
+
+  <main>
+    <section class="card play-card" id="play-panel">
+      <div class="sr-live" aria-live="polite" aria-atomic="true" id="live-sr"></div>
+      <div class="sentence" id="sentence" aria-label="The hidden sentence"></div>
+
+      <div class="meter">
+        <span class="meta-chip">letter <b id="m-pos">1</b> / <b id="m-len">–</b></span>
+        <span class="meta-chip">⌀ <b id="m-avg">–</b> guesses</span>
+        <span class="meta-chip">≈ <b id="m-bits">–</b> bits/letter</span>
+      </div>
+
+      <p class="ask">Guess the next letter</p>
+      <div class="keys" id="keys" aria-label="Letter keys"></div>
+    </section>
+
+    <section class="card reveal-card" id="reveal-panel" hidden>
+      <h2>You measured English!</h2>
+      <p class="verdict-sub" id="verdict-sub"></p>
+
+      <details class="more" id="more-math">
+        <summary>Show the details</summary>
+
+        <div class="chips">
+          <span class="chip-stat">first try: <b id="chip-first"></b></span>
+          <span class="chip-stat">⌀ guesses: <b id="chip-avg"></b></span>
+          <span class="chip-stat"><b id="chip-letters"></b> letters</span>
+        </div>
+
+        <figure class="chart-figure">
+          <figcaption>How many guesses each letter took</figcaption>
+          <svg id="hist" viewBox="0 0 640 240" role="img"
+               aria-label="Histogram of guesses needed per letter"></svg>
+        </figure>
+
+        <p class="insight" id="insight"></p>
+        <p class="mathline" id="mathline"></p>
+        <p class="compare">Shannon's subject (1951): ~1.3 bits/letter · our n-gram experiment: ≤ 1.84 · random letters: 4.75.</p>
+      </details>
+
+      <button class="btn btn-primary" id="next">Next sentence</button>
+    </section>
+
+    <details class="learn">
+      <summary class="meta-chip">What is this measuring?</summary>
+      <ul>
+        <li>Your guess counts carry the same information as the text — a perfect predictor could rebuild the sentence from them.</li>
+        <li>Letters you get first-try were redundant: the language had already decided them.</li>
+        <li>Entropy is the surprise per letter; English runs ~1–1.3 bits against a 4.75-bit alphabet. That gap is redundancy.</li>
+        <li>The method is Shannon's <a href="https://www.princeton.edu/~wbialek/rome/refs/shannon_51.pdf">Prediction and Entropy of Printed English</a> (1951).</li>
+      </ul>
+    </details>
+
+    <p class="buildtag">v1</p>
+  </main>
+
+</div>
+<script src="sentences.js?v=1"></script>
+<script src="game.js?v=1"></script>
+</body>
+</html>

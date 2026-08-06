@@ -57,10 +57,23 @@ a one-sided coin (0 bits). After that, hidden coins are sampled *uniformly in
 entropy* (not in bias) so low-, mid-, and high-entropy coins all show up equally
 often, with the fair and one-sided anchors recurring occasionally (10% / 6%).
 
+### 2 · The Redundancy of English — [`games/redundancy-of-english/`](games/redundancy-of-english/)
+
+Shannon's 1951 experiment (*Prediction and Entropy of Printed English*) as a
+game: a hidden sentence from the Gutenberg corpus, guessed one letter at a time
+on a 27-key board. Wrong keys get crossed off; revealed letters are colored by
+how many guesses they cost (a sequential blue ramp — first-try letters visibly
+recede, expensive ones pop), and no word boundaries are shown ahead of the
+cursor, just as Shannon's subject saw nothing ahead. Your guess counts are the
+measurement: the reveal computes Shannon's 1951 bounds from them
+(Σi(qᵢ−qᵢ₊₁)log₂ i ≤ H ≤ −Σqᵢlog₂ qᵢ) and reports *your* entropy of English in
+bits/letter, pooled across the session, with a guess-count histogram behind a
+fold. The reveal-note loudness scales with guess cost — surprise you can hear.
+Sentences are pre-extracted by `make_sentences.py` from the same corpus as the
+redundancy experiment.
+
 ## Roadmap
 
-- **The Redundancy of English** — guess text letter-by-letter, recreating Shannon's
-  1951 estimate of ~1 bit per letter.
 - **The Noisy Channel** — send messages through static; discover parity and why
   structured redundancy beats repetition.
 - **Build-a-Code** — assign short codewords to common symbols and race the entropy
@@ -69,8 +82,7 @@ often, with the fair and one-sided anchors recurring occasionally (10% / 6%).
 ## Structure & design
 
 - Each explorable is self-contained under `games/<name>/` (HTML + CSS + JS, no
-  shared runtime). The multi-game landing page is parked for now — the root
-  `index.html` redirects straight to the coin game while it's a one-off.
+  shared runtime), linked from the landing page `index.html`.
 - Light and dark mode via `prefers-color-scheme` (append `?dark` to force dark).
 - Sound is synthesized with the Web Audio API — no audio files. Heads and tails
   land on different notes (E6 / A5), the reveal stamps with a thunk, and a short

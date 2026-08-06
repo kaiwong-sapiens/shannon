@@ -75,7 +75,11 @@ body {
 
 a { color: inherit; }
 
-/* ---------- masthead ---------- */
+/* ---------- top bar + masthead ---------- */
+
+.topbar { display: flex; margin-bottom: 20px; }
+.crumb a { font-size: 14px; font-weight: 600; color: var(--muted); text-decoration: none; }
+.crumb a:hover { color: var(--ink); }
 
 .meta-chip {
   font-size: 13px; font-weight: 700; color: var(--ink-2);
