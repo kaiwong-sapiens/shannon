@@ -57,7 +57,7 @@
 
         <p class="insight" id="insight"></p>
         <p class="mathline" id="mathline"></p>
-        <p class="compare">Shannon's subject (1951): ~1.3 bits/letter · our n-gram experiment: ≤ 1.84 · random letters: 4.75.</p>
+        <p class="compare">Shannon's subject (1951): ~1.3 bits/letter · our n-gram experiment: ≤ 1.84 · random letters: log₂ 27 ≈ 4.75.</p>
       </details>
 
       <button class="btn btn-primary" id="next">Next sentence</button>
@@ -68,16 +68,17 @@
       <ul>
         <li>Your guess counts carry the same information as the text — a perfect predictor could rebuild the sentence from them.</li>
         <li>Letters you get first-try were redundant: the language had already decided them.</li>
-        <li>Entropy is the surprise per letter; English runs ~1–1.3 bits against a 4.75-bit alphabet. That gap is redundancy.</li>
+        <li>Why 4.75? The board has 27 keys (a–z + space). If every key were equally likely, pinning one down would take log₂ 27 ≈ 4.75 yes/no halvings — the ceiling a letter <em>could</em> carry.</li>
+        <li>Entropy is the surprise per letter; English runs ~1–1.3 bits against that 4.75-bit ceiling. The gap is redundancy.</li>
         <li>The method is Shannon's <a href="https://www.princeton.edu/~wbialek/rome/refs/shannon_51.pdf">Prediction and Entropy of Printed English</a> (1951).</li>
       </ul>
     </details>
 
-    <p class="buildtag">v1</p>
+    <p class="buildtag">v2</p>
   </main>
 
 </div>
 <script src="sentences.js?v=1"></script>
-<script src="game.js?v=1"></script>
+<script src="game.js?v=2"></script>
 </body>
 </html>

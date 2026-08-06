@@ -260,7 +260,7 @@ function finishSentence() {
 
   els.insight.textContent = insightFor(red);
   els.mathline.textContent =
-    `Shannon’s bounds from your guesses: ${hl.toFixed(2)} ≤ H ≤ ${hu.toFixed(2)} bits/letter (alphabet: ${F0.toFixed(2)})`;
+    `Shannon’s bounds from your guesses: ${hl.toFixed(2)} ≤ H ≤ ${hu.toFixed(2)} bits/letter (ceiling: log₂ 27 = ${F0.toFixed(2)})`;
 
   drawHist();
   els.revealPanel.hidden = false;
@@ -341,7 +341,7 @@ els.next.addEventListener('click', nextSentence);
 
 /* ---------------- init ---------------- */
 
-console.log('redundancy-of-english build v1');
+console.log('redundancy-of-english build v2');
 buildKeys();
 shuffleDeck();
 nextSentence();
