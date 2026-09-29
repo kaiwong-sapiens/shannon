@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>The Communication System · shannon</title>
+  <meta name="description" content="Shannon's 1948 diagram as a simulator: send a message through a noisy channel, protect it with Hamming's code, and step through every bit.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20100%20100%22%3E%3Ctext%20y=%22.9em%22%20font-size=%2290%22%3E%F0%9F%93%A1%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css?v=1">
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <nav class="crumb"><a href="../../">← shannon</a></nav>
+  </div>
+
+  <header class="masthead">
+    <h1>The Communication System</h1>
+    <p class="tagline">Shannon's 1948 diagram, running. Send a message through <strong>noise</strong> — then pause and step through it, bit by bit.</p>
+  </header>
+
+  <main>
+    <div class="system" id="system">
+      <div class="sr-live" aria-live="polite" aria-atomic="true" id="live-sr"></div>
+
+      <section class="stage" id="st-source" aria-label="Information source">
+        <div class="stage-head">
+          <h2>Information source</h2>
+          <span class="tools">
+            <button class="icon-btn" id="edit" aria-label="Type your own message" title="Type your own message">✎</button>
+            <button class="icon-btn" id="another" aria-label="Another message" title="Another message">↻</button>
+          </span>
+        </div>
+        <p class="msg" id="src-text"></p>
+        <textarea class="msg-edit" id="src-edit" rows="3" maxlength="240" spellcheck="false" aria-label="Your message" hidden></textarea>
+        <p class="attrib" id="src-attrib"></p>
+      </section>
+
+      <div class="flow"><span>message</span></div>
+
+      <section class="stage" id="st-tx" aria-label="Transmitter">
+        <div class="stage-head">
+          <h2>Transmitter</h2>
+          <span class="stat" id="tx-cost"></span>
+        </div>
+        <div class="controls">
+          <span class="lbl">compress</span>
+          <div class="seg" role="radiogroup" aria-label="Compress" id="seg-compress">
+            <button role="radio" data-v="off">off</button>
+            <button role="radio" data-v="on">on</button>
+          </div>
+          <span class="lbl">protect</span>
+          <div class="seg" role="radiogroup" aria-label="Protect" id="seg-protect">
+            <button role="radio" data-v="none">none</button>
+            <button role="radio" data-v="rep3">repeat ×3</button>
+            <button role="radio" data-v="hamming">Hamming</button>
+          </div>
+        </div>
+        <div class="op" id="tx-op"></div>
+      </section>
+
+      <div class="flow"><span>signal</span></div>
+
+      <section class="stage" id="st-ch" aria-label="Channel">
+        <div class="stage-head">
+          <h2>Channel</h2>
+          <span class="stat" id="ch-len"></span>
+        </div>
+        <div class="op" id="ch-op"></div>
+        <canvas id="grid" role="img" aria-label="The signal, one square per bit"></canvas>
+        <div class="legend" id="legend">
+          <span><i class="sw sw-d"></i>message bit</span>
+          <span id="lg-p"><i class="sw sw-p"></i>protection bit</span>
+          <span><i class="sw sw-hit"></i>hit by noise</span>
+          <span id="lg-fix"><i class="sw sw-fix"></i>hit, then repaired</span>
+        </div>
+        <div class="noise-box">
+          <div class="stage-head">
+            <h2><svg class="zap" viewBox="0 0 24 24" aria-hidden="true"><path d="M13.5 2 4.5 13.5h6L9.5 22l9-11.5h-6z"/></svg>Noise source</h2>
+            <output class="stat" id="noise-label" for="noise"></output>
+          </div>
+          <input type="range" id="noise" min="0" max="17" step="1" aria-label="Noise: how often a bit gets flipped">
+        </div>
+      </section>
+
+      <div class="flow"><span>received signal</span></div>
+
+      <section class="stage" id="st-rx" aria-label="Receiver">
+        <div class="stage-head">
+          <h2>Receiver</h2>
+          <span class="stat" id="rx-stat"></span>
+        </div>
+        <div class="op" id="rx-op"></div>
+      </section>
+
+      <div class="flow"><span>message</span></div>
+
+      <section class="stage" id="st-dest" aria-label="Destination">
+        <div class="stage-head">
+          <h2>Destination</h2>
+          <span class="stat" id="dest-stat"></span>
+        </div>
+        <p class="msg" id="dest-text"></p>
+      </section>
+
+      <div class="transport" id="transport">
+        <div class="t-buttons">
+          <button class="t-btn" id="t-start" aria-label="Back to the start" title="Back to the start (Home)">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h2.4v14H5zM19 5.6v12.8L8.6 12z"/></svg>
+          </button>
+          <button class="t-btn" id="t-back" aria-label="Step back" title="Step back (←)">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.6 5h2.4v14h-2.4zM13.6 5.6v12.8L4 12z"/></svg>
+          </button>
+          <button class="t-play" id="t-play">
+            <svg viewBox="0 0 24 24" aria-hidden="true" id="t-play-icon"><path d="M7 4.8v14.4L19 12z"/></svg>
+            <span id="t-play-text">Send</span>
+          </button>
+          <button class="t-btn" id="t-fwd" aria-label="Step forward" title="Step forward (→)">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5h2.4v14H6zM10.4 5.6v12.8L20 12z"/></svg>
+          </button>
+          <button class="t-btn" id="t-end" aria-label="Skip to the end" title="Skip to the end (End)">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16.6 5H19v14h-2.4zM5 5.6v12.8L15.4 12z"/></svg>
+          </button>
+        </div>
+        <div class="t-scrub">
+          <input type="range" id="scrub" min="0" max="1" value="0" step="1" aria-label="Transmission progress">
+          <span class="t-pos" id="t-pos"></span>
+          <button class="t-speed" id="t-speed" aria-label="Playback speed">1×</button>
+        </div>
+      </div>
+    </div>
+
+    <details class="card more" id="more">
+      <summary>Show the details</summary>
+
+      <figure class="chart-figure">
+        <figcaption>Shannon's limit: how much message each bit can carry through this noise</figcaption>
+        <svg id="cap" viewBox="0 0 640 320" role="img"
+             aria-label="Channel capacity, one minus the binary entropy of the noise, against the noise level, with your transmitter's rate marked."></svg>
+      </figure>
+      <p class="insight" id="cap-now"></p>
+      <ul class="facts">
+        <li><b>Why 1 − H(p)?</b> Every bit, the noise source flips a coin that lands “flip” with chance p. The receiver can't tell which bits it flipped — that coin's entropy, H(p), is exactly what each bit loses. (It's the curve from <a href="../coin-entropy/">Guess the Coin's Entropy</a>, upside down.)</li>
+        <li><b>Shannon's own example</b> (§12): 1 error in 100 at 1,000 bits per second leaves 919 bits per second of information — not 990, because nobody knows <em>which</em> bits are wrong.</li>
+        <li><b>Hamming's code</b> is the one Shannon prints in §17: X1, X2, X4 make three parity checks α, β, γ even; after the channel, the checks that come out odd spell, in binary, the position of the flipped bit.</li>
+        <li><b>Compress</b> swaps the 5-bit code for a Huffman code built from English letter frequencies: <span id="huff-avg"></span> bits per letter instead of 5. Squeezed text has no slack — one flipped bit can derail every letter after it.</li>
+      </ul>
+    </details>
+
+    <details class="learn">
+      <summary class="meta-chip">What is this?</summary>
+      <ul>
+        <li>Fig. 1 of Shannon's 1948 paper: every communication system — telegraph, telephone, radio, the internet — is these five boxes plus a noise source.</li>
+        <li>The transmitter can <em>compress</em> (squeeze out the message's own redundancy) and <em>protect</em> (add redundancy the receiver can check).</li>
+        <li>Tap any letter, or any square of the signal, to jump to the moment it was sent. Keyboard: space, ← →, Home, End.</li>
+        <li>Read the source: <a href="https://people.math.harvard.edu/~ctm/home/text/others/shannon/entropy/entropy.pdf">A Mathematical Theory of Communication</a> (1948).</li>
+      </ul>
+    </details>
+
+    <p class="buildtag">v1</p>
+  </main>
+
+</div>
+<script src="codebook.js?v=1"></script>
+<script src="game.js?v=1"></script>
+</body>
+</html>
