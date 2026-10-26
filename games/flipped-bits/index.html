@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Find the Flipped Bits · shannon</title>
+  <meta name="description" content="Noise flipped some bits, and you can't see which. Ask yes/no questions to find them — every answer costs a bit. Shannon's equivocation, by hand.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20100%20100%22%3E%3Ctext%20y=%22.9em%22%20font-size=%2290%22%3E%F0%9F%94%8D%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css?v=1">
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <nav class="crumb"><a href="../../">← shannon</a></nav>
+  </div>
+
+  <header class="masthead">
+    <h1>Find the Flipped Bits</h1>
+    <p class="tagline">Noise flipped some of these 100 bits — they look like all the others. The observer saw what was sent: ask yes/no questions to find the flips. <strong>Every answer costs one bit.</strong></p>
+  </header>
+
+  <main>
+    <section class="card play-card">
+      <div class="ledger">
+        <span class="meta-chip">asked <b id="l-asked">0</b> <span id="l-asked-unit">questions</span></span>
+        <span class="meta-chip">fixed <b id="l-fixed">0</b> <span id="l-fixed-unit">flips</span></span>
+      </div>
+
+      <div class="grid" id="grid" role="group" aria-label="The 100 bits that arrived. Drag across bits to pick a group to ask about."></div>
+
+      <div class="action">
+        <p class="status" id="status" aria-live="polite"></p>
+        <button class="btn btn-primary" id="ask"></button>
+      </div>
+
+      <div class="noise-row">
+        <span class="lbl">noise</span>
+        <div class="seg" role="radiogroup" aria-label="How often the noise flips a bit" id="seg-noise">
+          <button role="radio" data-v="100">1 in 100</button>
+          <button role="radio" data-v="10">1 in 10</button>
+          <button role="radio" data-v="2">1 in 2</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="card stats-card" id="stats" hidden>
+      <p class="avg" id="avg"></p>
+      <p class="avg-sub" id="avg-sub"></p>
+      <button class="btn btn-wide" id="auto">Let the observer play 20 blocks</button>
+    </section>
+
+    <details class="card more">
+      <summary>Show the details</summary>
+      <ul class="facts">
+        <li>What you're paying for is what Shannon calls the <b>equivocation</b>: how unsure the receiver still is about what was sent, after seeing what arrived. At 1 flip in 100 it is −(0.99 log₂ 0.99 + 0.01 log₂ 0.01) ≈ <b>0.081 bits per bit</b> — 8.1 bits per block of 100.</li>
+        <li>Shannon's §12 example: 1,000 bits per second with 1 error in 100 delivers 1,000 − 81 = <b>919</b> bits per second of information — not 990, because the receiver also has to learn <em>where</em> the errors are.</li>
+        <li>At 1 in 2 the arrivals tell you nothing: you pay about 100 questions for 100 bits. A coin flipped at the receiver would do as well.</li>
+        <li>Your questions play the part of Shannon's “correction channel” (§12, Fig. 8). He proved it needs at least the equivocation — no question-asking scheme can do better on average.</li>
+      </ul>
+    </details>
+
+    <details class="learn">
+      <summary class="meta-chip">How do I play?</summary>
+      <ul>
+        <li>Drag across some bits (or tap one) to pick a group, then ask whether any of them flipped. With nothing picked, you ask about all the bits you haven't cleared yet.</li>
+        <li>A <b>no</b> clears the whole group. A <b>yes</b> marks it orange: a flip is in there somewhere — split it and ask again.</li>
+        <li>When a single bit must be the flip, it flips back on its own. A block is done when every bit is cleared or fixed.</li>
+      </ul>
+    </details>
+
+    <p class="buildtag">v1</p>
+  </main>
+
+</div>
+<script src="game.js?v=1"></script>
+</body>
+</html>
